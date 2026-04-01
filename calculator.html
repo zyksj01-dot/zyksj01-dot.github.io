@@ -46,6 +46,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
 .btn-ghost:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
 .btn-export { background: var(--green-light); color: var(--green); border: 1px solid rgba(42,122,80,.2); font-weight: 600; }
 .btn-export:hover { background: var(--green); color: white; }
+.btn-blue { background: var(--blue-light); color: var(--blue); border: 1px solid rgba(45,95,166,.2); font-weight: 600; }
+.btn-blue:hover { background: var(--blue); color: white; }
 
 /* step nav */
 .step-nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 32px; display: flex; }
@@ -81,6 +83,10 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
 .formula-hint.green { border-left-color: var(--green); }
 .formula-hint.blue { border-left-color: var(--blue); }
 
+/* area sync notice */
+.area-sync-box { background: #fff8e6; border: 1px solid #f0d080; border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: .77rem; color: #7a5c00; font-family: 'JetBrains Mono', monospace; line-height: 1.7; }
+.area-sync-box strong { color: var(--accent-dark); }
+
 /* divider */
 .inner-divider { height: 1px; background: var(--border-light); margin: 16px 0; }
 .inner-label { font-size: .78rem; font-weight: 600; color: var(--text2); margin-bottom: 10px; }
@@ -94,6 +100,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
 .finput { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .85rem; transition: all .15s; outline: none; }
 .finput:focus { border-color: var(--accent); background: white; box-shadow: 0 0 0 3px rgba(181,133,58,.08); }
 .finput:hover:not(:focus) { border-color: #c8c0b0; }
+.finput.derived { background: #f0f7f0; border-color: #b8d8c0; color: var(--green); }
 .funit { font-size: .71rem; color: var(--muted); white-space: nowrap; font-family: 'JetBrains Mono', monospace; }
 .fhint { font-size: .67rem; color: var(--muted); margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
 .fselect { flex: 1; max-width: 200px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; color: var(--text); font-size: .85rem; outline: none; cursor: pointer; }
@@ -111,15 +118,21 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
 .plot-table td input { width: 100%; background: transparent; border: 1px solid transparent; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .8rem; text-align: center; outline: none; padding: 4px; border-radius: 4px; }
 .plot-table td input:focus { background: white; border-color: var(--accent); }
 .plot-table td input.ni { text-align: left; }
+.plot-table td input.derived-cell { background: #f0f7f0; color: var(--green); border-color: #c0dcc8; }
 .plot-table tr:hover td { background: rgba(181,133,58,.03); }
 .del-btn { background: var(--red-light); border: 1px solid rgba(184,48,48,.2); color: var(--red); border-radius: 4px; padding: 3px 9px; cursor: pointer; font-size: .72rem; }
 .del-btn:hover { background: var(--red); color: white; }
 .add-btn { margin-top: 10px; font-size: .78rem; }
 
-/* infra */
+/* infra / other rows */
 .infra-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .infra-row input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .82rem; outline: none; }
 .infra-row input:focus { border-color: var(--accent); background: white; }
+
+/* other-item (expenditure/income extra) */
+.other-item { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.other-item input { background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; color: var(--text); font-family: 'JetBrains Mono', monospace; font-size: .82rem; outline: none; }
+.other-item input:focus { border-color: var(--accent); background: white; }
 
 /* step nav btns */
 .snav { display: flex; justify-content: space-between; align-items: center; margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
@@ -185,7 +198,8 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
   <div class="topbar-actions">
     <button class="btn btn-ghost" onclick="saveConfig()">💾 保存</button>
     <button class="btn btn-ghost" onclick="loadConfig()">📂 载入</button>
-    <button class="btn btn-export" onclick="exportCSV()">📊 导出CSV</button>
+    <button class="btn btn-export" onclick="exportExcel()">📊 导出Excel</button>
+    <button class="btn btn-blue" onclick="exportWord()">📄 导出Word</button>
     <button class="btn btn-primary" onclick="runCalc()">▶ 开始测算</button>
   </div>
 </header>
@@ -219,20 +233,60 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
   <div class="section-card">
     <div class="section-card-header"><div class="section-dot"></div><div class="section-title">1.2 &nbsp;征迁总量与安置方式</div><div class="section-sub">单位：万㎡</div></div>
     <div class="section-card-body">
+      <!-- 修改1：可安置面积自动等于三项之和，并用提示框说明逻辑 -->
+      <div class="area-sync-box">
+        ⚠️ <strong>可安置面积</strong> 将自动等于下方三项之和（住宅产权置换 + 商业产权置换 + 货币化安置），无需单独填写。
+      </div>
       <div class="fg fg-4">
-        <div class="fgroup"><label class="flabel">可安置面积（合计）</label><div class="frow"><input class="finput" id="area_resettable" type="number" placeholder="0"/><span class="funit">万㎡</span></div></div>
-        <div class="fgroup"><label class="flabel">住宅产权置换</label><div class="frow"><input class="finput" id="area_resi_replace" type="number" placeholder="0"/><span class="funit">万㎡</span></div></div>
-        <div class="fgroup"><label class="flabel">商业产权置换</label><div class="frow"><input class="finput" id="area_comm_replace" type="number" placeholder="0"/><span class="funit">万㎡</span></div></div>
-        <div class="fgroup"><label class="flabel">货币化安置</label><div class="frow"><input class="finput" id="area_monetary" type="number" placeholder="0"/><span class="funit">万㎡</span></div></div>
-        <div class="fgroup"><label class="flabel">不予安置（违章搭盖等）</label><div class="frow"><input class="finput" id="area_no_settle" type="number" placeholder="0"/><span class="funit">万㎡</span></div></div>
+        <div class="fgroup">
+          <label class="flabel">可安置面积（自动汇总）</label>
+          <div class="frow"><input class="finput derived" id="area_resettable" type="number" placeholder="自动计算" readonly/><span class="funit">万㎡</span></div>
+          <div class="fhint">= 住宅置换 + 商业置换 + 货币化</div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">住宅产权置换</label>
+          <div class="frow"><input class="finput" id="area_resi_replace" type="number" placeholder="0" oninput="syncSettleArea()"/><span class="funit">万㎡</span></div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">商业产权置换</label>
+          <div class="frow"><input class="finput" id="area_comm_replace" type="number" placeholder="0" oninput="syncSettleArea()"/><span class="funit">万㎡</span></div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">货币化安置</label>
+          <div class="frow"><input class="finput" id="area_monetary" type="number" placeholder="0" oninput="syncSettleArea()"/><span class="funit">万㎡</span></div>
+        </div>
+        <div class="fgroup">
+          <label class="flabel">不予安置（违章搭盖等）</label>
+          <div class="frow"><input class="finput" id="area_no_settle" type="number" placeholder="0"/><span class="funit">万㎡</span></div>
+        </div>
       </div>
     </div>
   </div>
 
   <div class="section-card">
-    <div class="section-card-header"><div class="section-dot"></div><div class="section-title">1.3 &nbsp;安置地块</div><div class="section-sub">地上/地下面积单位：㎡；车位留空=自动按地下面积÷35估算</div></div>
+    <!-- 修改2：安置地块自动计算亩/地上面积/总面积/车位 -->
+    <div class="section-card-header">
+      <div class="section-dot"></div>
+      <div class="section-title">1.3 &nbsp;安置地块</div>
+      <div class="section-sub">输入用地面积(㎡)→自动算亩；输入容积率→自动算地上面积；输入地下面积→自动算总面积和车位（车位可手动覆盖）</div>
+    </div>
     <div class="section-card-body">
-      <table class="plot-table"><thead><tr><th style="min-width:100px">地块名称</th><th>用地面积(㎡)</th><th>用地(亩)</th><th>容积率</th><th>地上面积(㎡)</th><th>地下面积(㎡)</th><th>车位(个)</th><th></th></tr></thead><tbody id="settle-tbody"></tbody></table>
+      <table class="plot-table">
+        <thead>
+          <tr>
+            <th style="min-width:90px">地块名称</th>
+            <th>用地面积(㎡)</th>
+            <th>用地(亩)<br><span style="font-weight:400;color:var(--green);font-size:.68rem">自动</span></th>
+            <th>容积率</th>
+            <th>地上面积(㎡)<br><span style="font-weight:400;color:var(--green);font-size:.68rem">自动</span></th>
+            <th>地下面积(㎡)</th>
+            <th>总面积(㎡)<br><span style="font-weight:400;color:var(--green);font-size:.68rem">自动</span></th>
+            <th>车位(个)<br><span style="font-weight:400;color:var(--muted);font-size:.68rem">自动/手填</span></th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="settle-tbody"></tbody>
+      </table>
       <button class="btn btn-ghost add-btn" onclick="addPlot('settle')">＋ 添加安置地块</button>
     </div>
   </div>
@@ -282,7 +336,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
         <div class="fgroup"><label class="flabel">公产征收面积</label><div class="frow"><input class="finput" id="govt_gfa" type="number" value="0"/><span class="funit">㎡</span></div></div>
         <div class="fgroup"><label class="flabel">公产补偿单价</label><div class="frow"><input class="finput" id="govt_yuan" type="number" value="7000"/><span class="funit">元/㎡</span></div></div>
         <div class="fgroup"><label class="flabel">特殊地块（加油站等）</label><div class="frow"><input class="finput" id="gasstation_cost" type="number" value="0"/><span class="funit">亿元</span></div></div>
-        <div class="fgroup"><label class="flabel">搭盖补偿单价</label><div class="frow"><input class="finput" id="illegal_yuan" type="number" value="500"/><span class="funit">元/㎡</span></div><div class="fhint">不予安置面积为基数</div></div>
+        <div class="fgroup"><label class="flabel">搭盖补偿单价</label><div class="frow"><input class="finput" id="illegal_yuan" type="number" value="500"/><span class="funit">元/㎡</span></div></div>
       </div>
     </div>
   </div>
@@ -290,31 +344,43 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
   <div class="section-card">
     <div class="section-card-header"><div class="section-dot"></div><div class="section-title">2.3 &nbsp;安置房建设</div></div>
     <div class="section-card-body">
-      <div class="inner-label">建设模式</div>
       <div class="mode-tabs">
-        <button class="mode-tab active" id="mt-zb" onclick="setMode('划拨')">划拨（自建）</button>
-        <button class="mode-tab" id="mt-hg" onclick="setMode('出让回购')">出让回购</button>
+        <button class="mode-tab active" id="mt-zb" onclick="setMode('划拨')">划拨建安</button>
+        <button class="mode-tab" id="mt-hg" onclick="setMode('回购')">出让回购</button>
       </div>
       <div id="build-params">
-        <div class="fg fg-4">
+        <div class="fg fg-3">
           <div class="fgroup"><label class="flabel">地上建安单价</label><div class="frow"><input class="finput" id="build_yuan_above" type="number" value="3300"/><span class="funit">元/㎡</span></div></div>
           <div class="fgroup"><label class="flabel">地下建安单价</label><div class="frow"><input class="finput" id="build_yuan_under" type="number" value="3300"/><span class="funit">元/㎡</span></div></div>
         </div>
       </div>
       <div id="buyback-params" style="display:none">
-        <div class="fgroup" style="margin-bottom:12px"><label class="flabel">回购方式</label><select class="fselect" id="buyback_mode"><option value="unit_price">按单价回购</option><option value="total">按总价回购</option></select></div>
-        <div class="fg fg-4">
-          <div class="fgroup"><label class="flabel">地上回购单价</label><div class="frow"><input class="finput" id="buyback_yuan_above" type="number" value="11000"/><span class="funit">元/㎡</span></div></div>
-          <div class="fgroup"><label class="flabel">地下回购单价</label><div class="frow"><input class="finput" id="buyback_yuan_under" type="number" value="5000"/><span class="funit">元/㎡</span></div></div>
-          <div class="fgroup"><label class="flabel">回购总价（总价模式填）</label><div class="frow"><input class="finput" id="buyback_total" type="number" value="0"/><span class="funit">亿元</span></div></div>
+        <div class="fg fg-3" style="margin-bottom:12px">
+          <div class="fgroup"><label class="flabel">回购方式</label>
+            <select class="fselect" id="buyback_mode" onchange="toggleBuybackMode()">
+              <option value="unit_price">按单价</option>
+              <option value="total">填总价</option>
+            </select>
+          </div>
+        </div>
+        <div id="buyback-unit">
+          <div class="fg fg-3">
+            <div class="fgroup"><label class="flabel">地上回购单价</label><div class="frow"><input class="finput" id="buyback_yuan_above" type="number" value="11000"/><span class="funit">元/㎡</span></div></div>
+            <div class="fgroup"><label class="flabel">地下回购单价</label><div class="frow"><input class="finput" id="buyback_yuan_under" type="number" value="5000"/><span class="funit">元/㎡</span></div></div>
+          </div>
+        </div>
+        <div id="buyback-total" style="display:none">
+          <div class="fg fg-3">
+            <div class="fgroup"><label class="flabel">回购总价</label><div class="frow"><input class="finput" id="buyback_total" type="number" placeholder="0"/><span class="funit">亿元</span></div></div>
+          </div>
         </div>
       </div>
       <div class="inner-divider"></div>
       <div class="inner-label">临时物业费补助</div>
       <div class="fg fg-4">
-        <div class="fgroup"><label class="flabel">住宅物业补贴</label><div class="frow"><input class="finput" id="resi_property_yuan" type="number" value="1.2"/><span class="funit">元/㎡/月</span></div></div>
-        <div class="fgroup"><label class="flabel">商业物业补贴</label><div class="frow"><input class="finput" id="comm_property_yuan" type="number" value="1.6"/><span class="funit">元/㎡/月</span></div></div>
-        <div class="fgroup"><label class="flabel">补贴年数</label><div class="frow"><input class="finput" id="property_years" type="number" value="5"/><span class="funit">年</span></div></div>
+        <div class="fgroup"><label class="flabel">住宅补贴单价</label><div class="frow"><input class="finput" id="resi_property_yuan" type="number" value="1.2"/><span class="funit">元/㎡/月</span></div></div>
+        <div class="fgroup"><label class="flabel">商业补贴单价</label><div class="frow"><input class="finput" id="comm_property_yuan" type="number" value="1.6"/><span class="funit">元/㎡/月</span></div></div>
+        <div class="fgroup"><label class="flabel">补贴年限</label><div class="frow"><input class="finput" id="property_years" type="number" value="5"/><span class="funit">年</span></div></div>
       </div>
     </div>
   </div>
@@ -339,6 +405,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
     </div>
   </div>
 
+  <!-- 修改3：支出页面底部增加"其他支出"手动输入 -->
+  <div class="section-card">
+    <div class="section-card-header"><div class="section-dot"></div><div class="section-title">2.6 &nbsp;其他支出项目</div><div class="section-sub">如有上述未涵盖的支出，在此手动录入</div></div>
+    <div class="section-card-body">
+      <div id="exp-other-list"></div>
+      <button class="btn btn-ghost add-btn" onclick="addOtherItem('exp')">＋ 添加其他支出</button>
+    </div>
+  </div>
+
   <div class="snav"><button class="btn btn-ghost" onclick="goStep(1)">← 上一步</button><div class="sprogress">第 2 步 / 共 4 步</div><button class="btn btn-primary" onclick="goStep(3)">下一步：收入测算 →</button></div>
 </div>
 
@@ -350,9 +425,30 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
   </div>
 
   <div class="section-card">
-    <div class="section-card-header"><div class="section-dot"></div><div class="section-title">3.1 &nbsp;经营性出让地块</div><div class="section-sub">楼面价单位：万元/㎡</div></div>
+    <!-- 修改4：出让地块同安置地块，自动计算，楼面价默认0.8 -->
+    <div class="section-card-header">
+      <div class="section-dot"></div>
+      <div class="section-title">3.1 &nbsp;经营性出让地块</div>
+      <div class="section-sub">输入用地面积(㎡)→自动算亩；输入容积率→自动算地上面积；输入地下面积→自动算总面积和车位；楼面价默认0.8万/㎡</div>
+    </div>
     <div class="section-card-body">
-      <table class="plot-table"><thead><tr><th style="min-width:100px">地块名称</th><th>用地面积(㎡)</th><th>用地(亩)</th><th>容积率</th><th>地上面积(㎡)</th><th>地下面积(㎡)</th><th>楼面价(万/㎡)</th><th></th></tr></thead><tbody id="transfer-tbody"></tbody></table>
+      <table class="plot-table">
+        <thead>
+          <tr>
+            <th style="min-width:90px">地块名称</th>
+            <th>用地面积(㎡)</th>
+            <th>用地(亩)<br><span style="font-weight:400;color:var(--green);font-size:.68rem">自动</span></th>
+            <th>容积率</th>
+            <th>地上面积(㎡)<br><span style="font-weight:400;color:var(--green);font-size:.68rem">自动</span></th>
+            <th>地下面积(㎡)</th>
+            <th>总面积(㎡)<br><span style="font-weight:400;color:var(--green);font-size:.68rem">自动</span></th>
+            <th>车位(个)<br><span style="font-weight:400;color:var(--muted);font-size:.68rem">自动/手填</span></th>
+            <th>楼面价(万/㎡)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="transfer-tbody"></tbody>
+      </table>
       <button class="btn btn-ghost add-btn" onclick="addPlot('transfer')">＋ 添加出让地块</button>
     </div>
   </div>
@@ -398,6 +494,15 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Serif SC', 
     </div>
   </div>
 
+  <!-- 修改3：收入页面底部增加"其他收入"手动输入 -->
+  <div class="section-card">
+    <div class="section-card-header"><div class="section-dot"></div><div class="section-title">3.5 &nbsp;其他收入项目</div><div class="section-sub">如有上述未涵盖的收入，在此手动录入</div></div>
+    <div class="section-card-body">
+      <div id="inc-other-list"></div>
+      <button class="btn btn-ghost add-btn" onclick="addOtherItem('inc')">＋ 添加其他收入</button>
+    </div>
+  </div>
+
   <div class="snav"><button class="btn btn-ghost" onclick="goStep(2)">← 上一步</button><div class="sprogress">第 3 步 / 共 4 步</div><button class="btn btn-primary" onclick="runCalc()">▶ 开始测算，查看结果 →</button></div>
 </div>
 
@@ -425,22 +530,117 @@ function goStep(n){
   window.scrollTo(0,0);
 }
 
-// ── 地块/公建 ──
+// ── 修改1：可安置面积自动同步 ──
+function syncSettleArea(){
+  const r=parseFloat(document.getElementById('area_resi_replace').value)||0;
+  const c=parseFloat(document.getElementById('area_comm_replace').value)||0;
+  const m=parseFloat(document.getElementById('area_monetary').value)||0;
+  const total=Math.round((r+c+m)*100)/100;
+  document.getElementById('area_resettable').value=total||'';
+}
+
+// ── 修改2&4：地块表格（安置+出让）自动计算逻辑 ──
+// settle: 8列(名称/用地m2/用地亩/容积率/地上/地下/总面积/车位) + 删除
+// transfer: 9列 + 楼面价 + 删除
 function addPlot(t){
   const tb=document.getElementById(t+'-tbody');
   const tr=document.createElement('tr');
-  const fp=t==='settle'
-    ?`<td><input class="ni" placeholder="地块名称"/></td><td><input type="number" placeholder="0"/></td><td><input type="number" placeholder="0"/></td><td><input type="number" placeholder="2.5"/></td><td><input type="number" placeholder="0"/></td><td><input type="number" placeholder="0"/></td><td><input type="number" placeholder="自动"/></td>`
-    :`<td><input class="ni" placeholder="地块名称"/></td><td><input type="number" placeholder="0"/></td><td><input type="number" placeholder="0"/></td><td><input type="number" placeholder="2.5"/></td><td><input type="number" placeholder="0"/></td><td><input type="number" placeholder="0"/></td><td><input type="number" placeholder="1.18" step="0.01"/></td>`;
-  tr.innerHTML=fp+`<td><button class="del-btn" onclick="this.closest('tr').remove()">删</button></td>`;
+  if(t==='settle'){
+    tr.innerHTML=`
+      <td><input class="ni" placeholder="地块名称"/></td>
+      <td><input type="number" placeholder="0" oninput="calcPlotRow(this,'settle')"/></td>
+      <td><input type="number" class="derived-cell" placeholder="自动" readonly/></td>
+      <td><input type="number" placeholder="2.5" oninput="calcPlotRow(this,'settle')"/></td>
+      <td><input type="number" class="derived-cell" placeholder="自动" readonly/></td>
+      <td><input type="number" placeholder="0" oninput="calcPlotRow(this,'settle')"/></td>
+      <td><input type="number" class="derived-cell" placeholder="自动" readonly/></td>
+      <td><input type="number" placeholder="自动" oninput="calcPlotRow(this,'settle')"/></td>
+      <td><button class="del-btn" onclick="this.closest('tr').remove()">删</button></td>`;
+  } else {
+    tr.innerHTML=`
+      <td><input class="ni" placeholder="地块名称"/></td>
+      <td><input type="number" placeholder="0" oninput="calcPlotRow(this,'transfer')"/></td>
+      <td><input type="number" class="derived-cell" placeholder="自动" readonly/></td>
+      <td><input type="number" placeholder="2.5" oninput="calcPlotRow(this,'transfer')"/></td>
+      <td><input type="number" class="derived-cell" placeholder="自动" readonly/></td>
+      <td><input type="number" placeholder="0" oninput="calcPlotRow(this,'transfer')"/></td>
+      <td><input type="number" class="derived-cell" placeholder="自动" readonly/></td>
+      <td><input type="number" placeholder="自动" oninput="calcPlotRow(this,'transfer')"/></td>
+      <td><input type="number" placeholder="0.8" step="0.01" value="0.8"/></td>
+      <td><button class="del-btn" onclick="this.closest('tr').remove()">删</button></td>`;
+  }
   tb.appendChild(tr);
 }
+
+function calcPlotRow(inp, t){
+  const tr=inp.closest('tr');
+  const inputs=[...tr.querySelectorAll('input')];
+  // settle: [0]=名称,[1]=用地m2,[2]=用地亩(auto),[3]=容积率,[4]=地上(auto),[5]=地下,[6]=总面积(auto),[7]=车位
+  // transfer: same + [8]=楼面价
+  const lm2=parseFloat(inputs[1].value)||0;
+  const far=parseFloat(inputs[3].value)||0;
+  const bm2=parseFloat(inputs[5].value)||0;
+
+  // 亩 = m2 / 666.67
+  const mu=lm2>0?Math.round(lm2/666.67*100)/100:0;
+  inputs[2].value=mu||'';
+
+  // 地上面积 = 用地面积 * 容积率
+  const above=lm2>0&&far>0?Math.round(lm2*far*100)/100:0;
+  inputs[4].value=above||'';
+
+  // 总面积 = 地上 + 地下
+  const total=above+bm2;
+  inputs[6].value=total>0?Math.round(total*100)/100:'';
+
+  // 车位自动 = 地下 / 35，但如果用户已手动填写车位则不覆盖
+  // 车位字段在index[7]
+  const pkVal=inputs[7].value;
+  // 只有当车位为空或者是由于地下变化而需要刷新时自动算
+  // 检测：触发者是否是 inputs[5]（地下面积）
+  const isUnderChanged=(inp===inputs[5]);
+  if(isUnderChanged){
+    // 如果用户没有手动输入（或者值跟旧的自动值接近），才自动更新
+    const autoPk=bm2>0?Math.round(bm2/35):0;
+    // 仅当车位字段是空的才自动填入（用户手填则不覆盖）
+    if(!inputs[7].dataset.manualSet){
+      inputs[7].value=autoPk||'';
+    }
+  }
+}
+
+// 标记车位字段被手动修改
+document.addEventListener('input',function(e){
+  const tr=e.target.closest('#settle-tbody tr, #transfer-tbody tr');
+  if(!tr)return;
+  const inputs=[...tr.querySelectorAll('input')];
+  const pkIdx=inputs.indexOf(e.target);
+  // settle: pk=7, transfer: pk=7
+  if(pkIdx===7){
+    if(e.target.value!==''){
+      e.target.dataset.manualSet='1';
+    } else {
+      delete e.target.dataset.manualSet;
+    }
+  }
+});
+
 function addInfra(){
   const list=document.getElementById('infra-list');
   const d=document.createElement('div'); d.className='infra-row';
   d.innerHTML=`<input class="in" placeholder="项目名称（如：市政道路、学校等）" style="flex:3"/><input class="ic" type="number" placeholder="金额" step="0.01" style="flex:1;text-align:right"/><span class="funit">亿元</span><button class="del-btn" onclick="this.closest('.infra-row').remove()">删</button>`;
   list.appendChild(d);
 }
+
+// 修改3：其他支出/收入项
+function addOtherItem(type){
+  const listId=type==='exp'?'exp-other-list':'inc-other-list';
+  const list=document.getElementById(listId);
+  const d=document.createElement('div'); d.className='other-item';
+  d.innerHTML=`<input class="oi-name" placeholder="项目名称（如：拆迁奖励补贴等）" style="flex:3"/><input class="oi-amt" type="number" placeholder="金额" step="0.01" style="flex:1;text-align:right"/><span class="funit">亿元</span><button class="del-btn" onclick="this.closest('.other-item').remove()">删</button>`;
+  list.appendChild(d);
+}
+
 function setMode(m){
   document.getElementById('build-params').style.display=m==='划拨'?'':'none';
   document.getElementById('buyback-params').style.display=m==='划拨'?'none':'';
@@ -448,56 +648,178 @@ function setMode(m){
   document.getElementById('mt-hg').classList.toggle('active',m!=='划拨');
   window._sm=m;
 }
+function toggleBuybackMode(){
+  const v=document.getElementById('buyback_mode').value;
+  document.getElementById('buyback-unit').style.display=v==='unit_price'?'':'none';
+  document.getElementById('buyback-total').style.display=v==='total'?'':'none';
+}
 window._sm='划拨';
 
 // ── 参数收集 ──
 const g=id=>parseFloat(document.getElementById(id)?.value)||0;
 const sv=id=>document.getElementById(id)?.value||'';
 const go=id=>{const v=document.getElementById(id)?.value;return(v===''||v==null)?null:parseFloat(v);};
+const R=v=>Math.round(v*100)/100;
 
 function collectPlots(t){
   const plots=[];
   document.querySelectorAll(`#${t}-tbody tr`).forEach(tr=>{
     const inp=[...tr.querySelectorAll('input')];
     const name=inp[0]?.value||''; if(!name) return;
-    const lm2=parseFloat(inp[1]?.value)||0,lmu=parseFloat(inp[2]?.value)||0,far=parseFloat(inp[3]?.value)||0;
-    const am2=parseFloat(inp[4]?.value)||0,bm2=parseFloat(inp[5]?.value)||0;
-    if(t==='settle'){const pkr=inp[6]?.value;const pk=pkr===''?bm2/35:parseFloat(pkr)||0;plots.push({name,land_m2:lm2,land_mu:lmu,far,above_m2:am2,basement_m2:bm2,parking_count:pk});}
-    else{const fp=parseFloat(inp[6]?.value)||0;plots.push({name,land_m2:lm2,land_mu:lmu,far,above_m2:am2,basement_m2:bm2,floor_price:fp,parking_count:bm2/35});}
+    const lm2=parseFloat(inp[1]?.value)||0;
+    const lmu=parseFloat(inp[2]?.value)||0; // auto-calculated亩
+    const far=parseFloat(inp[3]?.value)||0;
+    const am2=parseFloat(inp[4]?.value)||0; // auto-calculated地上
+    const bm2=parseFloat(inp[5]?.value)||0;
+    const totalm2=parseFloat(inp[6]?.value)||0; // auto-calculated总面积
+    if(t==='settle'){
+      const pkRaw=inp[7]?.value;
+      const pk=(pkRaw===''||pkRaw==null)?bm2/35:parseFloat(pkRaw)||0;
+      plots.push({name,land_m2:lm2,land_mu:lmu,far,above_m2:am2,basement_m2:bm2,total_m2:totalm2,parking_count:pk});
+    } else {
+      const pkRaw=inp[7]?.value;
+      const pk=(pkRaw===''||pkRaw==null)?bm2/35:parseFloat(pkRaw)||0;
+      const fp=parseFloat(inp[8]?.value)||0.8;
+      plots.push({name,land_m2:lm2,land_mu:lmu,far,above_m2:am2,basement_m2:bm2,total_m2:totalm2,parking_count:pk,floor_price:fp});
+    }
   });
   return plots;
 }
+
+function collectOtherItems(type){
+  const listId=type==='exp'?'exp-other-list':'inc-other-list';
+  const items=[];
+  document.querySelectorAll(`#${listId} .other-item`).forEach(d=>{
+    const n=d.querySelector('.oi-name')?.value||'';
+    const a=parseFloat(d.querySelector('.oi-amt')?.value)||0;
+    if(n||a) items.push({name:n,amount:a});
+  });
+  return items;
+}
+
 function collectParams(){
   const infra=[];
   document.querySelectorAll('.infra-row').forEach(r=>{const n=r.querySelector('.in')?.value||'',c=parseFloat(r.querySelector('.ic')?.value)||0;if(n||c)infra.push({name:n,cost:c});});
-  return{project_name:sv('project_name'),scheme_name:sv('scheme_name'),area_resettable:g('area_resettable'),area_resi_replace:g('area_resi_replace'),area_comm_replace:g('area_comm_replace'),area_monetary:g('area_monetary'),area_no_settle:g('area_no_settle'),settle_plots:collectPlots('settle'),transfer_plots:collectPlots('transfer'),transit_month_yuan:g('transit_month_yuan'),transit_normal_months:g('transit_normal_months'),transit_overdue_months:g('transit_overdue_months'),transit_overdue_multiplier:g('transit_overdue_multiplier'),override_transit_cost:go('override_transit_cost'),reloc_yuan:g('reloc_yuan'),attach_yuan:g('attach_yuan'),decor_yuan:g('decor_yuan'),reward_yuan:g('reward_yuan'),biz_yuan:g('biz_yuan'),svc_yuan:g('svc_yuan'),other_early:g('other_early'),monetary_yuan:g('monetary_yuan'),enterprise_land_mu:g('enterprise_land_mu'),enterprise_price:g('enterprise_price'),govt_gfa:g('govt_gfa'),govt_yuan:g('govt_yuan'),gasstation_cost:g('gasstation_cost'),illegal_yuan:g('illegal_yuan'),settle_mode:window._sm,build_yuan_above:g('build_yuan_above'),build_yuan_under:g('build_yuan_under'),buyback_mode:sv('buyback_mode'),buyback_yuan_above:g('buyback_yuan_above'),buyback_yuan_under:g('buyback_yuan_under'),buyback_total:g('buyback_total'),resi_property_yuan:g('resi_property_yuan'),comm_property_yuan:g('comm_property_yuan'),property_years:g('property_years'),infra_total:infra.reduce((s,i)=>s+i.cost,0),infra_items:infra,loan_amount_manual:go('loan_amount_manual'),loan_rate:g('loan_rate')/100,loan_years:g('loan_years'),eq_yuan:g('eq_yuan'),over10_ratio:g('over10_ratio')/100,over10_yuan:g('over10_yuan'),leftover_yuan:g('leftover_yuan'),settle_parking_wan:g('settle_parking_wan'),land_tax_ratio:g('land_tax_ratio')/100,build_base_yuan:g('build_base_yuan'),build_tax_rate:g('build_tax_rate')/100,build_share:g('build_share')/100,sale_yuan:g('sale_yuan'),sales_rate:g('sales_rate')/100,sales_share:g('sales_share')/100,parking_sale_wan:g('parking_sale_wan'),return_ratio_a:g('return_ratio_a')/100,return_ratio_b:g('return_ratio_b')/100};
+  const otherExp=collectOtherItems('exp');
+  const otherInc=collectOtherItems('inc');
+  return{
+    project_name:sv('project_name'),scheme_name:sv('scheme_name'),
+    area_resettable:g('area_resettable'),area_resi_replace:g('area_resi_replace'),
+    area_comm_replace:g('area_comm_replace'),area_monetary:g('area_monetary'),area_no_settle:g('area_no_settle'),
+    settle_plots:collectPlots('settle'),transfer_plots:collectPlots('transfer'),
+    transit_month_yuan:g('transit_month_yuan'),transit_normal_months:g('transit_normal_months'),
+    transit_overdue_months:g('transit_overdue_months'),transit_overdue_multiplier:g('transit_overdue_multiplier'),
+    override_transit_cost:go('override_transit_cost'),
+    reloc_yuan:g('reloc_yuan'),attach_yuan:g('attach_yuan'),decor_yuan:g('decor_yuan'),
+    reward_yuan:g('reward_yuan'),biz_yuan:g('biz_yuan'),svc_yuan:g('svc_yuan'),other_early:g('other_early'),
+    monetary_yuan:g('monetary_yuan'),enterprise_land_mu:g('enterprise_land_mu'),enterprise_price:g('enterprise_price'),
+    govt_gfa:g('govt_gfa'),govt_yuan:g('govt_yuan'),gasstation_cost:g('gasstation_cost'),illegal_yuan:g('illegal_yuan'),
+    settle_mode:window._sm,
+    build_yuan_above:g('build_yuan_above'),build_yuan_under:g('build_yuan_under'),
+    buyback_mode:sv('buyback_mode'),buyback_yuan_above:g('buyback_yuan_above'),
+    buyback_yuan_under:g('buyback_yuan_under'),buyback_total:g('buyback_total'),
+    resi_property_yuan:g('resi_property_yuan'),comm_property_yuan:g('comm_property_yuan'),property_years:g('property_years'),
+    infra_total:infra.reduce((s,i)=>s+i.cost,0),infra_items:infra,
+    loan_amount_manual:go('loan_amount_manual'),loan_rate:g('loan_rate')/100,loan_years:g('loan_years'),
+    eq_yuan:g('eq_yuan'),over10_ratio:g('over10_ratio')/100,over10_yuan:g('over10_yuan'),
+    leftover_yuan:g('leftover_yuan'),settle_parking_wan:g('settle_parking_wan'),
+    land_tax_ratio:g('land_tax_ratio')/100,build_base_yuan:g('build_base_yuan'),
+    build_tax_rate:g('build_tax_rate')/100,build_share:g('build_share')/100,
+    sale_yuan:g('sale_yuan'),sales_rate:g('sales_rate')/100,sales_share:g('sales_share')/100,
+    parking_sale_wan:g('parking_sale_wan'),
+    return_ratio_a:g('return_ratio_a')/100,return_ratio_b:g('return_ratio_b')/100,
+    other_exp_items:otherExp,other_inc_items:otherInc
+  };
 }
 
 // ── 计算引擎 ──
-const R=v=>Math.round(v*100)/100;
 function calcEngine(p){
   const r={};const sp=p.settle_plots||[],tp=p.transfer_plots||[];
   r.area_total_migrate=R(p.area_resi_replace+p.area_comm_replace+p.area_monetary+p.area_no_settle);
-  r.settle_above=R(sp.reduce((s,x)=>s+x.above_m2,0)/10000);r.settle_underground=R(sp.reduce((s,x)=>s+x.basement_m2,0)/10000);r.settle_parking=R(sp.reduce((s,x)=>s+(x.parking_count??x.basement_m2/35),0));r.settle_total_gfa=R(r.settle_above+r.settle_underground);r.settle_land_mu=R(sp.reduce((s,x)=>s+x.land_mu,0));
-  r.transfer_above=R(tp.reduce((s,x)=>s+x.above_m2,0)/10000);r.transfer_underground=R(tp.reduce((s,x)=>s+x.basement_m2,0)/10000);r.transfer_parking=R(tp.reduce((s,x)=>s+(x.parking_count??x.basement_m2/35),0));r.transfer_total_gfa=R(r.transfer_above+r.transfer_underground);r.transfer_land_mu=R(tp.reduce((s,x)=>s+x.land_mu,0));
-  const eff=p.transit_normal_months+p.transit_overdue_months*p.transit_overdue_multiplier;r.transit_eff_months=eff;
-  const ct=p.area_resi_replace*10000*p.transit_month_yuan*eff/1e8;r.transit_cost=R(p.override_transit_cost!=null?p.override_transit_cost:ct);
-  r.reloc_cost=R(((p.area_resi_replace+p.area_comm_replace)*2+p.area_monetary)*10000*p.reloc_yuan/1e8);r.attach_cost=R(p.area_resettable*10000*p.attach_yuan/1e8);r.decor_cost=R(p.area_resettable*10000*p.decor_yuan/1e8);r.reward_cost=R(p.area_resettable*10000*p.reward_yuan/1e8);r.biz_cost=R(r.area_total_migrate*10000*p.biz_yuan/1e8);r.svc_cost=R(r.area_total_migrate*10000*p.svc_yuan/1e8);r.other_early=R(p.other_early);
+  r.settle_above=R(sp.reduce((s,x)=>s+x.above_m2,0)/10000);
+  r.settle_underground=R(sp.reduce((s,x)=>s+x.basement_m2,0)/10000);
+  r.settle_parking=R(sp.reduce((s,x)=>s+(x.parking_count??x.basement_m2/35),0));
+  r.settle_total_gfa=R(r.settle_above+r.settle_underground);
+  r.settle_land_mu=R(sp.reduce((s,x)=>s+x.land_mu,0));
+  r.settle_land_m2=sp.reduce((s,x)=>s+x.land_m2,0);
+
+  r.transfer_above=R(tp.reduce((s,x)=>s+x.above_m2,0)/10000);
+  r.transfer_underground=R(tp.reduce((s,x)=>s+x.basement_m2,0)/10000);
+  r.transfer_parking=R(tp.reduce((s,x)=>s+(x.parking_count??x.basement_m2/35),0));
+  r.transfer_total_gfa=R(r.transfer_above+r.transfer_underground);
+  r.transfer_land_mu=R(tp.reduce((s,x)=>s+x.land_mu,0));
+
+  const eff=p.transit_normal_months+p.transit_overdue_months*p.transit_overdue_multiplier;
+  r.transit_eff_months=eff;
+  r.transit_month_yuan=p.transit_month_yuan;
+  const ct=p.area_resi_replace*10000*p.transit_month_yuan*eff/1e8;
+  r.transit_cost=R(p.override_transit_cost!=null?p.override_transit_cost:ct);
+
+  r.reloc_yuan=p.reloc_yuan;
+  r.reloc_cost=R(((p.area_resi_replace+p.area_comm_replace)*2+p.area_monetary)*10000*p.reloc_yuan/1e8);
+  r.attach_yuan=p.attach_yuan;r.attach_cost=R(p.area_resettable*10000*p.attach_yuan/1e8);
+  r.decor_yuan=p.decor_yuan;r.decor_cost=R(p.area_resettable*10000*p.decor_yuan/1e8);
+  r.reward_yuan=p.reward_yuan;r.reward_cost=R(p.area_resettable*10000*p.reward_yuan/1e8);
+  r.biz_yuan=p.biz_yuan;r.biz_cost=R(r.area_total_migrate*10000*p.biz_yuan/1e8);
+  r.svc_yuan=p.svc_yuan;r.svc_cost=R(r.area_total_migrate*10000*p.svc_yuan/1e8);
+  r.other_early=R(p.other_early);
   r.early_sub=R(r.transit_cost+r.reloc_cost+r.attach_cost+r.decor_cost+r.reward_cost+r.biz_cost+r.svc_cost+r.other_early);
-  r.monetary_cost=R(p.area_monetary*10000*p.monetary_yuan/1e8);r.enterprise_cost=R(p.enterprise_land_mu*p.enterprise_price/10000);r.govt_cost=R(p.govt_gfa*p.govt_yuan/1e8);r.gasstation_cost=R(p.gasstation_cost);r.illegal_cost=R(p.area_no_settle*10000*p.illegal_yuan/1e8);r.compensation_sub=R(r.monetary_cost+r.enterprise_cost+r.govt_cost+r.gasstation_cost+r.illegal_cost);
-  const sa=r.settle_above,su=r.settle_underground;let sac,suc;
-  if(p.settle_mode==='划拨'){sac=sa*10000*p.build_yuan_above/1e8;suc=su*10000*p.build_yuan_under/1e8;}else if(p.buyback_mode==='total'){const rt=(sa+su)>0?sa/(sa+su):0.5;sac=p.buyback_total*rt;suc=p.buyback_total*(1-rt);}else{sac=sa*10000*p.buyback_yuan_above/1e8;suc=su*10000*p.buyback_yuan_under/1e8;}
+
+  r.monetary_yuan=p.monetary_yuan;r.monetary_cost=R(p.area_monetary*10000*p.monetary_yuan/1e8);
+  r.enterprise_cost=R(p.enterprise_land_mu*p.enterprise_price/10000);
+  r.govt_yuan=p.govt_yuan;r.govt_cost=R(p.govt_gfa*p.govt_yuan/1e8);
+  r.gasstation_cost=R(p.gasstation_cost);
+  r.illegal_yuan=p.illegal_yuan;r.illegal_cost=R(p.area_no_settle*10000*p.illegal_yuan/1e8);
+  r.compensation_sub=R(r.monetary_cost+r.enterprise_cost+r.govt_cost+r.gasstation_cost+r.illegal_cost);
+
+  const sa=r.settle_above,su=r.settle_underground;
+  let sac,suc;
+  if(p.settle_mode==='划拨'){sac=sa*10000*p.build_yuan_above/1e8;suc=su*10000*p.build_yuan_under/1e8;}
+  else if(p.buyback_mode==='total'){const rt=(sa+su)>0?sa/(sa+su):0.5;sac=p.buyback_total*rt;suc=p.buyback_total*(1-rt);}
+  else{sac=sa*10000*p.buyback_yuan_above/1e8;suc=su*10000*p.buyback_yuan_under/1e8;}
+  r.settle_mode=p.settle_mode;
   r.settle_above_cost=R(sac);r.settle_under_cost=R(suc);r.settle_build_sub=R(sac+suc);
+
   r.property_cost=R((p.area_resi_replace*10000*p.resi_property_yuan+p.area_comm_replace*10000*p.comm_property_yuan)*12*p.property_years/1e8);
-  r.infra_sub=R(p.infra_total||0);r.sub_ex_interest=R(r.early_sub+r.compensation_sub+r.settle_build_sub+r.property_cost+r.infra_sub);
-  const tip=tp.reduce((s,t)=>s+t.above_m2/10000*t.floor_price,0);const loan=(p.loan_amount_manual!=null&&p.loan_amount_manual>0)?p.loan_amount_manual:Math.max(0,r.sub_ex_interest-tip*0.8);
-  r.loan_amount=R(loan);r.interest_cost=R(loan*p.loan_rate*p.loan_years);r.total_expenditure=R(r.sub_ex_interest+r.interest_cost);
+  r.infra_sub=R(p.infra_total||0);
+
+  // 其他支出合计
+  r.other_exp_total=R((p.other_exp_items||[]).reduce((s,i)=>s+i.amount,0));
+
+  r.sub_ex_interest=R(r.early_sub+r.compensation_sub+r.settle_build_sub+r.property_cost+r.infra_sub+r.other_exp_total);
+  const tip=tp.reduce((s,t)=>s+t.above_m2/10000*t.floor_price,0);
+  const loan=(p.loan_amount_manual!=null&&p.loan_amount_manual>0)?p.loan_amount_manual:Math.max(0,r.sub_ex_interest-tip*0.8);
+  r.loan_amount=R(loan);r.interest_cost=R(loan*p.loan_rate*p.loan_years);
+  r.total_expenditure=R(r.sub_ex_interest+r.interest_cost);
+
   r.transfer_income=R(tp.reduce((s,t)=>s+t.above_m2/10000*t.floor_price,0));
-  r.eq_area_income=R(p.area_resi_replace*10000*p.eq_yuan/1e8);r.over10_income=R(p.area_resi_replace*p.over10_ratio*10000*p.over10_yuan/1e8);const lo=Math.max(0,sa-p.area_resi_replace*1.1-p.area_comm_replace);r.leftover_above=R(lo);r.leftover_income=R(lo*10000*p.leftover_yuan/1e8);r.parking_income=R(r.settle_parking*p.settle_parking_wan/10000);r.settle_income_sub=R(r.eq_area_income+r.over10_income+r.leftover_income+r.parking_income);
-  r.area_land_tax=R(r.transfer_income*0.03*p.land_tax_ratio);const gfa=sa+su+r.transfer_above+r.transfer_underground;r.build_tax=R(gfa*10000*p.build_base_yuan/1e8*p.build_tax_rate*p.build_share);r.sales_tax=R(r.transfer_above*10000*p.sale_yuan/1e8*p.sales_rate*p.sales_share+r.transfer_parking*p.parking_sale_wan/10000*p.sales_rate*p.sales_share);r.tax_sub=R(r.area_land_tax+r.build_tax+r.sales_tax);
-  r.total_direct_income=R(r.transfer_income+r.settle_income_sub+r.tax_sub);
-  r.income_a=R(r.transfer_income*p.return_ratio_a+r.settle_income_sub+r.tax_sub);r.balance_a=R(r.income_a-r.total_expenditure);r.income_b=R(r.transfer_income*p.return_ratio_b+r.settle_income_sub+r.tax_sub);r.balance_b=R(r.income_b-r.total_expenditure);
-  r.params=p;return r;
+  r.eq_yuan=p.eq_yuan;r.eq_area_income=R(p.area_resi_replace*10000*p.eq_yuan/1e8);
+  r.over10_yuan=p.over10_yuan;r.over10_income=R(p.area_resi_replace*p.over10_ratio*10000*p.over10_yuan/1e8);
+  const lo=Math.max(0,sa-p.area_resi_replace*1.1-p.area_comm_replace);
+  r.leftover_above=R(lo);
+  r.leftover_yuan=p.leftover_yuan;r.leftover_income=R(lo*10000*p.leftover_yuan/1e8);
+  r.parking_income=R(r.settle_parking*p.settle_parking_wan/10000);
+  r.settle_income_sub=R(r.eq_area_income+r.over10_income+r.leftover_income+r.parking_income);
+
+  r.land_tax_ratio=p.land_tax_ratio;
+  r.area_land_tax=R(r.transfer_income*0.03*p.land_tax_ratio);
+  const gfa=sa+su+r.transfer_above+r.transfer_underground;
+  r.build_tax_base_yuan=p.build_base_yuan;r.build_tax_rate=p.build_tax_rate;r.build_tax_share=p.build_share;
+  r.build_tax=R(gfa*10000*p.build_base_yuan/1e8*p.build_tax_rate*p.build_share);
+  r.sale_yuan=p.sale_yuan;r.sales_rate=p.sales_rate;r.sales_share=p.sales_share;
+  r.sales_tax=R(r.transfer_above*10000*p.sale_yuan/1e8*p.sales_rate*p.sales_share+r.transfer_parking*p.parking_sale_wan/10000*p.sales_rate*p.sales_share);
+  r.tax_sub=R(r.area_land_tax+r.build_tax+r.sales_tax);
+
+  // 其他收入合计
+  r.other_inc_total=R((p.other_inc_items||[]).reduce((s,i)=>s+i.amount,0));
+
+  r.total_direct_income=R(r.transfer_income+r.settle_income_sub+r.tax_sub+r.other_inc_total);
+  r.income_a=R(r.transfer_income*p.return_ratio_a+r.settle_income_sub+r.tax_sub+r.other_inc_total);
+  r.balance_a=R(r.income_a-r.total_expenditure);
+  r.income_b=R(r.transfer_income*p.return_ratio_b+r.settle_income_sub+r.tax_sub+r.other_inc_total);
+  r.balance_b=R(r.income_b-r.total_expenditure);
+  r.params=p;r.settle_plots=sp;r.transfer_plots=tp;
+  return r;
 }
 
 // ── 渲染结果 ──
@@ -508,6 +830,11 @@ function runCalc(){
   document.getElementById('result-desc').textContent=`${p.project_name||'未命名项目'}${p.scheme_name?' · '+p.scheme_name:''} · 支出 ${r.total_expenditure} 亿 / 收入 ${r.total_direct_income} 亿`;
   for(let i=1;i<=3;i++){document.getElementById('sn'+i).textContent='✓';document.getElementById('tab-'+i).classList.add('done');}
   const b=document.getElementById('results-body');
+
+  // Other items detail rows
+  const expOtherRows=(p.other_exp_items||[]).map(i=>rr('　'+i.name,i.amount,'indent')).join('');
+  const incOtherRows=(p.other_inc_items||[]).map(i=>rr('　'+i.name,i.amount,'indent')).join('');
+
   b.innerHTML=`
   <div class="kpi-row">
     ${kpi('总支出',r.total_expenditure,'亿元','red')}
@@ -528,7 +855,10 @@ function runCalc(){
       ${rr('民房货币化',r.monetary_cost,'indent')}${rr('企业/公产/特殊/搭盖',R(r.enterprise_cost+r.govt_cost+r.gasstation_cost+r.illegal_cost),'indent')}
       ${rr('安置房建设小计',r.settle_build_sub,'subtotal')}
       ${rr('地上建设',r.settle_above_cost,'indent')}${rr('地下建设',r.settle_under_cost,'indent')}
-      ${rr('临时物业费',r.property_cost,'')}${rr('公建基础设施',r.infra_sub,'')}${rr('融资利息',r.interest_cost,'')}
+      ${rr('临时物业费',r.property_cost,'')}${rr('公建基础设施',r.infra_sub,'')}
+      ${r.other_exp_total>0?rr('其他支出小计',r.other_exp_total,'subtotal'):''}
+      ${expOtherRows}
+      ${rr('融资利息',r.interest_cost,'')}
       ${rr('支出合计',r.total_expenditure,'total')}
     </div>
     <div class="rsec">
@@ -539,6 +869,8 @@ function runCalc(){
       ${rr('等面积补差',r.eq_area_income,'indent')}${rr('超面积优惠价',r.over10_income,'indent')}${rr('剩余住宅拍卖',r.leftover_income,'indent')}${rr('地下车位销售',r.parking_income,'indent')}
       ${rr('税费区级所得小计',r.tax_sub,'subtotal')}
       ${rr('土地出让金契税',r.area_land_tax,'indent')}${rr('建安环节税费',r.build_tax,'indent')}${rr('商品房销售税费',r.sales_tax,'indent')}
+      ${r.other_inc_total>0?rr('其他收入小计',r.other_inc_total,'subtotal'):''}
+      ${incOtherRows}
       ${rr('收入合计',r.total_direct_income,'total')}
     </div>
   </div>
@@ -554,7 +886,11 @@ function runCalc(){
   </div>
   <div style="display:flex;justify-content:space-between;align-items:center;padding-top:16px;border-top:1px solid var(--border)">
     <button class="btn btn-ghost" onclick="goStep(3)">← 返回修改参数</button>
-    <div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="saveConfig()">💾 保存配置</button><button class="btn btn-export" onclick="exportCSV()">📊 导出CSV</button></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-ghost" onclick="saveConfig()">💾 保存配置</button>
+      <button class="btn btn-export" onclick="exportExcel()">📊 导出Excel</button>
+      <button class="btn btn-blue" onclick="exportWord()">📄 导出Word</button>
+    </div>
   </div>`;
   goStep(4);
 }
@@ -566,29 +902,316 @@ function bcard(ratio,income,bal,exp){const p=bal>=0,cls=p?'profit':'loss',sign=p
 // ── 保存/载入 ──
 function getState(){
   const sp=[],tp=[];
-  document.querySelectorAll('#settle-tbody tr').forEach(tr=>sp.push([...tr.querySelectorAll('input')].map(i=>i.value)));
-  document.querySelectorAll('#transfer-tbody tr').forEach(tr=>tp.push([...tr.querySelectorAll('input')].map(i=>i.value)));
+  document.querySelectorAll('#settle-tbody tr').forEach(tr=>sp.push([...tr.querySelectorAll('input')].map(i=>({v:i.value,m:i.dataset.manualSet||''}))));
+  document.querySelectorAll('#transfer-tbody tr').forEach(tr=>tp.push([...tr.querySelectorAll('input')].map(i=>({v:i.value,m:i.dataset.manualSet||''}))));
   const infra=[];document.querySelectorAll('.infra-row').forEach(r=>infra.push({n:r.querySelector('.in')?.value||'',c:r.querySelector('.ic')?.value||''}));
-  const flds=['project_name','scheme_name','area_resettable','area_resi_replace','area_comm_replace','area_monetary','area_no_settle','transit_month_yuan','transit_normal_months','transit_overdue_months','transit_overdue_multiplier','override_transit_cost','reloc_yuan','attach_yuan','decor_yuan','reward_yuan','biz_yuan','svc_yuan','other_early','monetary_yuan','enterprise_land_mu','enterprise_price','govt_gfa','govt_yuan','gasstation_cost','illegal_yuan','build_yuan_above','build_yuan_under','buyback_mode','buyback_yuan_above','buyback_yuan_under','buyback_total','resi_property_yuan','comm_property_yuan','property_years','loan_amount_manual','loan_rate','loan_years','eq_yuan','over10_ratio','over10_yuan','leftover_yuan','settle_parking_wan','land_tax_ratio','build_base_yuan','build_tax_rate','build_share','sale_yuan','sales_rate','sales_share','parking_sale_wan','return_ratio_a','return_ratio_b'];
+  const otherExp=[];document.querySelectorAll('#exp-other-list .other-item').forEach(d=>otherExp.push({n:d.querySelector('.oi-name')?.value||'',a:d.querySelector('.oi-amt')?.value||''}));
+  const otherInc=[];document.querySelectorAll('#inc-other-list .other-item').forEach(d=>otherInc.push({n:d.querySelector('.oi-name')?.value||'',a:d.querySelector('.oi-amt')?.value||''}));
+  const flds=['project_name','scheme_name','area_resi_replace','area_comm_replace','area_monetary','area_no_settle','transit_month_yuan','transit_normal_months','transit_overdue_months','transit_overdue_multiplier','override_transit_cost','reloc_yuan','attach_yuan','decor_yuan','reward_yuan','biz_yuan','svc_yuan','other_early','monetary_yuan','enterprise_land_mu','enterprise_price','govt_gfa','govt_yuan','gasstation_cost','illegal_yuan','build_yuan_above','build_yuan_under','buyback_mode','buyback_yuan_above','buyback_yuan_under','buyback_total','resi_property_yuan','comm_property_yuan','property_years','loan_amount_manual','loan_rate','loan_years','eq_yuan','over10_ratio','over10_yuan','leftover_yuan','settle_parking_wan','land_tax_ratio','build_base_yuan','build_tax_rate','build_share','sale_yuan','sales_rate','sales_share','parking_sale_wan','return_ratio_a','return_ratio_b'];
   const vals={};flds.forEach(f=>{const el=document.getElementById(f);if(el)vals[f]=el.value;});
-  return{vals,sm:window._sm,sp,tp,infra};
+  return{vals,sm:window._sm,sp,tp,infra,otherExp,otherInc};
 }
+
 function setState(st){
-  if(st.vals){Object.entries(st.vals).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.value=v;});document.getElementById('topProject').textContent=st.vals.project_name||'未命名项目';}
+  if(st.vals){
+    Object.entries(st.vals).forEach(([k,v])=>{const el=document.getElementById(k);if(el)el.value=v;});
+    document.getElementById('topProject').textContent=st.vals.project_name||'未命名项目';
+    syncSettleArea();
+  }
   if(st.sm)setMode(st.sm);
-  if(st.sp){document.getElementById('settle-tbody').innerHTML='';st.sp.forEach(row=>{addPlot('settle');const tr=document.getElementById('settle-tbody').lastElementChild;[...tr.querySelectorAll('input')].forEach((inp,i)=>inp.value=row[i]||'');});}
-  if(st.tp){document.getElementById('transfer-tbody').innerHTML='';st.tp.forEach(row=>{addPlot('transfer');const tr=document.getElementById('transfer-tbody').lastElementChild;[...tr.querySelectorAll('input')].forEach((inp,i)=>inp.value=row[i]||'');});}
+  if(st.sp){
+    document.getElementById('settle-tbody').innerHTML='';
+    st.sp.forEach(row=>{
+      addPlot('settle');
+      const tr=document.getElementById('settle-tbody').lastElementChild;
+      [...tr.querySelectorAll('input')].forEach((inp,i)=>{
+        inp.value=row[i]?.v||'';
+        if(row[i]?.m) inp.dataset.manualSet='1';
+      });
+    });
+  }
+  if(st.tp){
+    document.getElementById('transfer-tbody').innerHTML='';
+    st.tp.forEach(row=>{
+      addPlot('transfer');
+      const tr=document.getElementById('transfer-tbody').lastElementChild;
+      [...tr.querySelectorAll('input')].forEach((inp,i)=>{
+        inp.value=row[i]?.v||'';
+        if(row[i]?.m) inp.dataset.manualSet='1';
+      });
+    });
+  }
   if(st.infra){document.getElementById('infra-list').innerHTML='';st.infra.forEach(row=>{addInfra();const item=document.getElementById('infra-list').lastElementChild;item.querySelector('.in').value=row.n||'';item.querySelector('.ic').value=row.c||'';});}
+  if(st.otherExp){document.getElementById('exp-other-list').innerHTML='';st.otherExp.forEach(row=>{addOtherItem('exp');const item=document.getElementById('exp-other-list').lastElementChild;item.querySelector('.oi-name').value=row.n||'';item.querySelector('.oi-amt').value=row.a||'';});}
+  if(st.otherInc){document.getElementById('inc-other-list').innerHTML='';st.otherInc.forEach(row=>{addOtherItem('inc');const item=document.getElementById('inc-other-list').lastElementChild;item.querySelector('.oi-name').value=row.n||'';item.querySelector('.oi-amt').value=row.a||'';});}
 }
+
 function saveConfig(){const bl=new Blob([JSON.stringify(getState(),null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(bl);a.download=(document.getElementById('project_name').value||'测算配置')+'.json';a.click();}
 function loadConfig(){document.getElementById('file-input').click();}
 function handleFileLoad(e){const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=ev=>{try{setState(JSON.parse(ev.target.result));alert('配置加载成功！');}catch{alert('文件格式错误');}};rd.readAsText(f);e.target.value='';}
 
-function exportCSV(){
+// ══════════════════════════════════════════
+// 修改5：导出Excel（与.py版本逻辑完全一致）
+// ══════════════════════════════════════════
+function exportExcel(){
   if(!window._lr){alert('请先点击【▶ 开始测算】');return;}
-  const r=window._lr,p=window._lp,ra=Math.round(p.return_ratio_a*100),rb=Math.round(p.return_ratio_b*100);
-  const rows=[['项目名称',p.project_name],['方案名称',p.scheme_name],['',''],['=== 支出（亿元）===',''],['前期费用',r.early_sub],['  过渡费',r.transit_cost],['  搬迁补助',r.reloc_cost],['  附属物补偿',r.attach_cost],['  装修补偿',r.decor_cost],['  征迁奖励',r.reward_cost],['  征迁业务费',r.biz_cost],['  征迁服务费',r.svc_cost],['  其他前期',r.other_early],['货币补偿',r.compensation_sub],['安置房建设',r.settle_build_sub],['临时物业费',r.property_cost],['公建基础设施',r.infra_sub],['融资利息',r.interest_cost],['支出合计',r.total_expenditure],['',''],['=== 收入（亿元）===',''],['土地出让',r.transfer_income],...p.transfer_plots.map(t=>['  '+t.name,R(t.above_m2/10000*t.floor_price)]),['安置房收入',r.settle_income_sub],['税费区级所得',r.tax_sub],['收入合计',r.total_direct_income],['',''],['=== 资金平衡 ===',''],['方案A（返还'+ra+'%）有效收入',r.income_a],['方案A盈亏',r.balance_a],['方案B（返还'+rb+'%）有效收入',r.income_b],['方案B盈亏',r.balance_b]];
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob(['\ufeff'+rows.map(r=>r.map(v=>`"${v}"`).join(',')).join('\n')],{type:'text/csv;charset=utf-8'}));a.download=(p.project_name||'测算结果')+'.csv';a.click();
+  const r=window._lr,p=window._lp;
+
+  // 使用SheetJS生成xlsx
+  const script=document.createElement('script');
+  script.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+  script.onload=()=>_doExportExcel(r,p);
+  document.head.appendChild(script);
+}
+
+function _doExportExcel(r,p){
+  const sp=r.settle_plots||[],tp=r.transfer_plots||[];
+  const ra=Math.round(p.return_ratio_a*100),rb=Math.round(p.return_ratio_b*100);
+  const wb=XLSX.utils.book_new();
+  const ws_data=[];
+
+  function row(...cols){ws_data.push(cols);}
+  function emptyRow(){ws_data.push([]);}
+
+  // 标题
+  row([(p.project_name||'')+'资金平衡测算']);
+  emptyRow();
+
+  // 征迁安置概况
+  row(['征迁安置概况','','','','片区建设规模']);
+  row(['可安置面积',p.area_resettable+'万㎡','住宅产权置换',p.area_resi_replace+'万㎡','','安置地','出让地']);
+  row(['商业产权置换',p.area_comm_replace+'万㎡','货币化安置',p.area_monetary+'万㎡','用地面积（亩）',r.settle_land_mu,r.transfer_land_mu]);
+  row(['不予安置面积',p.area_no_settle+'万㎡','征迁总量（合计）',r.area_total_migrate+'万㎡','地上面积（万㎡）',r.settle_above,r.transfer_above]);
+  row(['','','','','地下面积（万㎡）',r.settle_underground,r.transfer_underground]);
+  row(['','','','','地下车位（个）',Math.round(r.settle_parking),Math.round(r.transfer_parking)]);
+  emptyRow();
+
+  // 支出
+  row(['一、支出']);
+  row(['序号','类别','子项','明细','数量','单价','资金（亿元）','备注']);
+  row(['1.1','前期费用','过渡费','',R(p.area_resi_replace),`${r.transit_month_yuan}元/㎡/月×${r.transit_eff_months}月`,r.transit_cost,`不逾期${p.transit_normal_months}月+逾期${p.transit_overdue_months}月×${p.transit_overdue_multiplier}倍`]);
+  row(['1.2','','搬迁补助费','','',`${r.reloc_yuan}元/㎡/趟`,r.reloc_cost,'产权置换2趟，货币化1趟']);
+  row(['1.3','','附属物补偿','',R(p.area_resettable),`${r.attach_yuan}元/㎡`,r.attach_cost,'可安置面积为基数']);
+  row(['1.4','','装修补偿','',R(p.area_resettable),`${r.decor_yuan}元/㎡`,r.decor_cost,'']);
+  row(['1.5','','征迁奖励金','',R(p.area_resettable),`${r.reward_yuan}元/㎡`,r.reward_cost,'丈量确认150+签约交房200']);
+  row(['1.6','','征迁业务费','',R(r.area_total_migrate),`${r.biz_yuan}元/㎡`,r.biz_cost,'征迁总量为基数']);
+  row(['1.7','','征迁服务费','',R(r.area_total_migrate),`${r.svc_yuan}元/㎡`,r.svc_cost,'指挥部开办费等']);
+  row(['1.8','','其他前期费用','','','',r.other_early,'规划修编、地形测绘、可研等']);
+  row(['','前期费用小计','','','','',r.early_sub,'']);
+  row(['2.1','货币补偿款','民房货币化安置','',R(p.area_monetary),`${r.monetary_yuan}元/㎡`,r.monetary_cost,'']);
+  row(['2.2','','企业工业用地征收','',`${p.enterprise_land_mu}亩`,`${p.enterprise_price}万/亩`,r.enterprise_cost,'评估价']);
+  row(['2.3','','公产征收','',`${p.govt_gfa}㎡`,`${r.govt_yuan}元/㎡`,r.govt_cost,'暂按货币化安置']);
+  row(['2.4','','特殊地块（加油站等）','','','',r.gasstation_cost,'估算']);
+  row(['2.5','','搭盖补偿','',R(p.area_no_settle),`${r.illegal_yuan}元/㎡`,r.illegal_cost,'不予安置面积']);
+  row(['','货币补偿小计','','','','',r.compensation_sub,'']);
+  const mode_label=r.settle_mode==='划拨'?'划拨建安':'出让回购';
+  row(['3.1',`安置房建设（${mode_label}）`,'地上建筑','',r.settle_above,'',r.settle_above_cost,'']);
+  row(['3.2','','地下室','',r.settle_underground,'',r.settle_under_cost,'']);
+  row(['','安置房建设小计','','',r.settle_total_gfa,'',r.settle_build_sub,'']);
+  row(['4','临时物业费补助','','','','',r.property_cost,`住宅${p.resi_property_yuan}元/月，商业${p.comm_property_yuan}元/月，补贴${p.property_years}年`]);
+  row(['5','公建基础设施','','','','',r.infra_sub,'含市政道路、学校等']);
+  // 其他支出
+  if((p.other_exp_items||[]).length>0){
+    row(['6','其他支出','','','','',r.other_exp_total,'']);
+    (p.other_exp_items||[]).forEach((it,i)=>{row([`6.${i+1}`,'',it.name,'','','',it.amount,'']);});
+  }
+  row(['7','建设期融资利息','','',r.loan_amount,`年化${(p.loan_rate*100).toFixed(1)}%×${p.loan_years}年`,r.interest_cost,`融资额${r.loan_amount}亿元`]);
+  row(['','支出合计','','','','',r.total_expenditure,'']);
+  emptyRow();
+
+  // 收入
+  row(['二、收入']);
+  row(['序号','类别','子项','明细','数量','单价','资金（亿元）','备注']);
+  row(['1','经营性土地出让','','',r.transfer_above,'',r.transfer_income,`出让地上面积${r.transfer_above}万㎡`]);
+  tp.forEach(t=>{const aw=R(t.above_m2/10000);const inc=R(aw*t.floor_price);row(['','',t.name,'',aw,`${(t.floor_price*10000).toFixed(0)}元/㎡`,inc,'']);});
+  row(['2.1','安置房收入','等面积补差','',R(p.area_resi_replace),`${r.eq_yuan}元/㎡`,r.eq_area_income,'']);
+  row(['2.2','','超面积10%优惠价','',R(p.area_resi_replace*p.over10_ratio),`${r.over10_yuan}元/㎡`,r.over10_income,'']);
+  row(['2.3','','剩余住宅拍卖','',r.leftover_above,`${r.leftover_yuan}元/㎡`,r.leftover_income,`安置后剩余${r.leftover_above}万㎡`]);
+  row(['2.4','','地下停车位销售','',`${Math.round(r.settle_parking)}个`,`${p.settle_parking_wan}万/个`,r.parking_income,'']);
+  row(['','安置房收入小计','','','','',r.settle_income_sub,'']);
+  row(['3.1','税费区级所得','土地出让金契税','',r.transfer_income,`×3%×区级${(r.land_tax_ratio*100).toFixed(0)}%`,r.area_land_tax,'']);
+  row(['3.2','','建安环节税费','',R(r.settle_total_gfa+r.transfer_total_gfa),`${r.build_tax_base_yuan}元/㎡×${(r.build_tax_rate*100).toFixed(0)}%×${(r.build_tax_share*100).toFixed(0)}%`,r.build_tax,'片区内所有建设']);
+  row(['3.3','','商品房销售税费','',r.transfer_above,`${r.sale_yuan}元/㎡×${(r.sales_rate*100).toFixed(1)}%×${(r.sales_share*100).toFixed(0)}%`,r.sales_tax,'含车位部分']);
+  row(['','税费小计','','','','',r.tax_sub,'']);
+  // 其他收入
+  if((p.other_inc_items||[]).length>0){
+    row(['4','其他收入','','','','',r.other_inc_total,'']);
+    (p.other_inc_items||[]).forEach((it,i)=>{row([`4.${i+1}`,'',it.name,'','','',it.amount,'']);});
+  }
+  row(['','收入合计','','','','',r.total_direct_income,'']);
+  emptyRow();
+
+  // 资金平衡
+  row(['三、资金平衡测算']);
+  row([`按出让收入${ra}%返还：收入${r.income_a}亿 − 支出${r.total_expenditure}亿`,r.balance_a>=0?'盈利':'亏损',`${Math.abs(r.balance_a).toFixed(2)}亿元`]);
+  row([`按出让收入${rb}%返还：收入${r.income_b}亿 − 支出${r.total_expenditure}亿`,r.balance_b>=0?'盈利':'亏损',`${Math.abs(r.balance_b).toFixed(2)}亿元`]);
+  emptyRow();
+
+  // 附：地块明细
+  row(['附：地块建设规模明细']);
+  row(['地块名称','用地面积(㎡)','用地面积(亩)','容积率','地上面积(㎡)','地下面积(㎡)','车位(个)','总面积(㎡)','类别']);
+  sp.forEach(lp=>{row([lp.name,R(lp.land_m2),R(lp.land_mu),lp.far,R(lp.above_m2),R(lp.basement_m2),Math.round(lp.parking_count||lp.basement_m2/35),R(lp.total_m2||lp.above_m2+lp.basement_m2),'安置地']);});
+  tp.forEach(lp=>{row([lp.name,R(lp.land_m2),R(lp.land_mu),lp.far,R(lp.above_m2),R(lp.basement_m2),Math.round(lp.parking_count||lp.basement_m2/35),R(lp.total_m2||lp.above_m2+lp.basement_m2),'出让地']);});
+  emptyRow();
+  row(['备注：本测算为估算性质，资金单位为亿元，面积单位为万平方米（地块明细为平方米）。实际以评估和成交结果为准。']);
+
+  const ws=XLSX.utils.aoa_to_sheet(ws_data);
+  ws['!cols']=[{wch:8},{wch:14},{wch:18},{wch:14},{wch:12},{wch:12},{wch:14},{wch:50}];
+  XLSX.utils.book_append_sheet(wb,ws,'资金平衡测算');
+  XLSX.writeFile(wb,(p.project_name||'测算结果')+'_资金平衡测算.xlsx');
+}
+
+// ══════════════════════════════════════════
+// 修改5：导出Word（与.py版本逻辑完全一致）
+// ══════════════════════════════════════════
+function exportWord(){
+  if(!window._lr){alert('请先点击【▶ 开始测算】');return;}
+
+  const script=document.createElement('script');
+  script.src='https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/build/index.min.js';
+  script.onload=()=>_doExportWord(window._lr,window._lp);
+  document.head.appendChild(script);
+}
+
+function _doExportWord(r,p){
+  const {Document,Packer,Paragraph,TextRun,HeadingLevel,AlignmentType,Table,TableRow,TableCell,WidthType,BorderStyle,ShadingType}=docx;
+  const sp=r.settle_plots||[],tp=r.transfer_plots||[];
+
+  function body(text,indent=true){
+    return new Paragraph({alignment:AlignmentType.BOTH,indent:indent?{firstLine:640}:undefined,children:[new TextRun({text,font:'仿宋_GB2312',size:32})]});
+  }
+  function h1(text){return new Paragraph({children:[new TextRun({text,font:'黑体',size:32,bold:true})],indent:{firstLine:640}});}
+  function h2(text){return new Paragraph({children:[new TextRun({text,font:'楷体_GB2312',size:32})],indent:{firstLine:640}});}
+  function h3(text){return new Paragraph({children:[new TextRun({text,font:'仿宋_GB2312',size:32,bold:true})],indent:{firstLine:640}});}
+  function formula(text){return new Paragraph({children:[new TextRun({text,font:'楷体_GB2312',size:24})],indent:{firstLine:640}});}
+  function emptyPara(){return new Paragraph({children:[new TextRun('')]});}
+
+  function makePlotTable(plots){
+    const headers=['地块名称','用地面积\n（亩）','容积率','地上面积\n（万㎡）','地下面积\n（万㎡）','总面积\n（万㎡）'];
+    const rows=[
+      new TableRow({children:headers.map(h=>new TableCell({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:h,font:'仿宋_GB2312',size:18,bold:true})]})],shading:{fill:'D9D9D9',type:ShadingType.CLEAR}}))}),
+      ...plots.map(lp=>{
+        const above=R(lp.above_m2/10000),under=R(lp.basement_m2/10000),total=R(above+under);
+        return new TableRow({children:[lp.name,lp.land_mu.toFixed(2),String(lp.far),String(above),String(under),String(total)].map(v=>new TableCell({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:v,font:'仿宋_GB2312',size:18})]})]}))});
+      })
+    ];
+    // totals row
+    const totLmu=R(plots.reduce((s,x)=>s+x.land_mu,0)),totAbove=R(plots.reduce((s,x)=>s+x.above_m2/10000,0)),totUnder=R(plots.reduce((s,x)=>s+x.basement_m2/10000,0)),totTotal=R(totAbove+totUnder);
+    rows.push(new TableRow({children:['合  计',totLmu.toFixed(2),'—',String(totAbove),String(totUnder),String(totTotal)].map(v=>new TableCell({children:[new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:v,font:'仿宋_GB2312',size:18,bold:true})]})],shading:{fill:'FCE4D6',type:ShadingType.CLEAR}}))}));
+    return new Table({rows,width:{size:100,type:WidthType.PERCENTAGE}});
+  }
+
+  const doc=new Document({sections:[{properties:{},children:[
+    new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:`关于${p.project_name||''}改造项目`,font:'方正小标宋简体',size:44,bold:false})]}),
+    new Paragraph({alignment:AlignmentType.CENTER,children:[new TextRun({text:'资金平衡测算情况的报告',font:'方正小标宋简体',size:44,bold:false})]}),
+    emptyPara(),
+    body('xxxxx：'),
+    body(`按照市、区领导调研精神及工作部署，区城投集团对${p.project_name||''}改造项目进行了资金平衡测算分析。经对照控规、地形图及权属资料，综合分析各项征迁成本及土地出让收益情况，现将测算情况报告如下：`),
+    emptyPara(),
+    h1('一、项目概况'),
+    body(`（一）征迁总量。拟实施${p.project_name||''}改造范围内民房征迁总量约${r.area_total_migrate}万平方米，其中：可安置面积${p.area_resettable}万平方米，不予安置面积（违章搭盖等）${p.area_no_settle}万平方米。`),
+    body(`（二）安置方式。住宅选择产权置换${p.area_resi_replace}万平方米，商业选择产权置换${p.area_comm_replace}万平方米，住宅选择货币化安置${p.area_monetary}万平方米。按照1:1.1的安置比例，共需建设安置住宅${R(p.area_resi_replace*1.1)}万平方米，安置商业${p.area_comm_replace}万平方米。`),
+    body(`（三）安置地块。结合片区控规，共规划安置地块${sp.length}个，总用地面积${r.settle_land_mu}亩（${r.settle_land_m2.toFixed(0)}平方米），规划总建筑面积${r.settle_total_gfa}万平方米（其中地上${r.settle_above}万平方米、地下${r.settle_underground}万平方米），可建地下车位约${Math.round(r.settle_parking)}个，可满足拆迁安置需求。各地块明细如下：`),
+    ...(sp.length>0?[makePlotTable(sp),emptyPara()]:[]),
+    body(`（四）出让地块。片区内规划可出让经营性地块共${tp.length}个，总用地面积${r.transfer_land_mu}亩，规划总建筑面积${r.transfer_total_gfa}万平方米（地上${r.transfer_above}万平方米、地下${r.transfer_underground}万平方米）。各地块明细如下：`),
+    ...(tp.length>0?[makePlotTable(tp),emptyPara()]:[]),
+    emptyPara(),
+    h1(`二、预估改造支出：共计${r.total_expenditure}亿元`),
+    h2(`（一）前期费用：${r.early_sub}亿元`),
+    h3(`1.过渡费${r.transit_cost}亿元。`),
+    body(`按照过渡费标准，不逾期${p.transit_normal_months}个月、逾期${p.transit_overdue_months}个月按${p.transit_overdue_multiplier}倍计算，等效${r.transit_eff_months}个月。`),
+    formula(`= 产权置换住宅面积${p.area_resi_replace}万㎡ × ${r.transit_month_yuan}元/㎡/月 × ${r.transit_eff_months}月 = ${r.transit_cost}亿元`),
+    h3(`2.搬迁补助费${r.reloc_cost}亿元。`),
+    body('产权置换住户按2趟计算（搬出+搬回），货币化安置住户按1趟计算。'),
+    formula(`= [（住宅${p.area_resi_replace}+商业${p.area_comm_replace}）万㎡×2趟 + 货币化${p.area_monetary}万㎡×1趟] × ${r.reloc_yuan}元/㎡/趟 = ${r.reloc_cost}亿元`),
+    h3(`3.附属物补偿${r.attach_cost}亿元。`),
+    formula(`= 可安置面积${p.area_resettable}万㎡ × ${r.attach_yuan}元/㎡ = ${r.attach_cost}亿元`),
+    h3(`4.装修补偿${r.decor_cost}亿元。`),
+    formula(`= 可安置面积${p.area_resettable}万㎡ × ${r.decor_yuan}元/㎡ = ${r.decor_cost}亿元`),
+    h3(`5.征迁奖励金${r.reward_cost}亿元。`),
+    formula(`= 可安置面积${p.area_resettable}万㎡ × ${r.reward_yuan}元/㎡ = ${r.reward_cost}亿元`),
+    h3(`6.征迁业务费${r.biz_cost}亿元。`),
+    formula(`= 征迁总量${r.area_total_migrate}万㎡ × ${r.biz_yuan}元/㎡ = ${r.biz_cost}亿元`),
+    h3(`7.征迁服务费${r.svc_cost}亿元。`),
+    formula(`= 征迁总量${r.area_total_migrate}万㎡ × ${r.svc_yuan}元/㎡ = ${r.svc_cost}亿元`),
+    h3(`8.其他前期费用${r.other_early}亿元。`),
+    emptyPara(),
+    h2(`（二）货币补偿款：${r.compensation_sub}亿元`),
+    h3(`1.民房货币化安置${r.monetary_cost}亿元。`),
+    formula(`= 货币化面积${p.area_monetary}万㎡ × ${r.monetary_yuan}元/㎡ = ${r.monetary_cost}亿元`),
+    h3(`2.企业工业用地征收${r.enterprise_cost}亿元。`),
+    formula(`= 工业用地${p.enterprise_land_mu}亩 × 评估价${p.enterprise_price}万元/亩 = ${r.enterprise_cost}亿元`),
+    h3(`3.公产征收（车管所等）${r.govt_cost}亿元。`),
+    formula(`= 公产建筑面积${p.govt_gfa}㎡ × ${r.govt_yuan}元/㎡ = ${r.govt_cost}亿元`),
+    h3(`4.加油站等特殊地块征收${r.gasstation_cost}亿元。`),
+    h3(`5.搭盖补偿${r.illegal_cost}亿元。`),
+    formula(`= 不予安置面积${p.area_no_settle}万㎡ × ${r.illegal_yuan}元/㎡ = ${r.illegal_cost}亿元`),
+    emptyPara(),
+    h2(`（三）安置房建设费用（${r.settle_mode==='划拨'?'划拨建安':'出让回购'}模式）：${r.settle_build_sub}亿元`),
+    h3(`1.地上建筑部分${r.settle_above_cost}亿元。`),
+    h3(`2.地下室部分${r.settle_under_cost}亿元。`),
+    emptyPara(),
+    h2(`（四）临时物业费补助：${r.property_cost}亿元`),
+    formula(`= （住宅${p.area_resi_replace}万㎡×${p.resi_property_yuan}元/㎡/月 + 商业${p.area_comm_replace}万㎡×${p.comm_property_yuan}元/㎡/月）× 12月 × ${p.property_years}年 = ${r.property_cost}亿元`),
+    emptyPara(),
+    h2(`（五）公建基础设施建设：${r.infra_sub}亿元`),
+    ...(p.infra_items||[]).map(item=>body(`　　${item.name}：${R(item.cost)}亿元。`)),
+    emptyPara(),
+    h2(`（六）建设期融资利息：${r.interest_cost}亿元`),
+    formula(`= 融资额${r.loan_amount}亿元 × 年化利率${(p.loan_rate*100).toFixed(1)}% × 计息${p.loan_years}年 = ${r.interest_cost}亿元`),
+    ...((p.other_exp_items||[]).length>0?[emptyPara(),h2(`（七）其他支出：${r.other_exp_total}亿元`),...(p.other_exp_items||[]).map(it=>body(`　　${it.name}：${it.amount}亿元。`))]:[]),
+    emptyPara(),
+    h1(`三、预计改造收入：共计${r.total_direct_income}亿元（直接收入口径）`),
+    h2(`（一）经营性土地出让收入：${r.transfer_income}亿元`),
+    ...tp.map(t=>{const aw=R(t.above_m2/10000);const fp=t.floor_price;return body(`　　${t.name}：计容建筑面积${aw}万㎡ × 楼面价${(fp*10000).toFixed(0)}元/㎡ = ${R(aw*fp)}亿元。`);}),
+    emptyPara(),
+    h2(`（二）安置房收入：${r.settle_income_sub}亿元`),
+    h3(`1.等面积补差${r.eq_area_income}亿元。`),
+    formula(`= 产权置换住宅${p.area_resi_replace}万㎡ × ${r.eq_yuan}元/㎡ = ${r.eq_area_income}亿元`),
+    h3(`2.超面积10%内优惠价补差${r.over10_income}亿元。`),
+    formula(`= 产权置换${p.area_resi_replace}万㎡ × 超面积比例${(p.over10_ratio*100).toFixed(0)}% × ${r.over10_yuan}元/㎡ = ${r.over10_income}亿元`),
+    h3(`3.剩余住宅拍卖${r.leftover_income}亿元。`),
+    formula(`= 安置地上面积${r.settle_above}万㎡ − 住宅安置需求${R(p.area_resi_replace*1.1)}万㎡ − 商业安置${p.area_comm_replace}万㎡ = 剩余${r.leftover_above}万㎡ × ${r.leftover_yuan}元/㎡ = ${r.leftover_income}亿元`),
+    h3(`4.地下停车位销售${r.parking_income}亿元。`),
+    formula(`= 安置地下车位${Math.round(r.settle_parking)}个 × ${p.settle_parking_wan}万元/个 = ${r.parking_income}亿元`),
+    emptyPara(),
+    h2(`（三）相关税费区级所得：${r.tax_sub}亿元`),
+    h3(`1.土地出让金契税${r.area_land_tax}亿元。`),
+    formula(`= 出让收入${r.transfer_income}亿元 × 契税税率3% × 区级分成${(r.land_tax_ratio*100).toFixed(0)}% = ${r.area_land_tax}亿元`),
+    h3(`2.建安环节税费${r.build_tax}亿元。`),
+    formula(`= 片区总建筑面积${R(r.settle_total_gfa+r.transfer_total_gfa)}万㎡ × 建安计价基数${r.build_tax_base_yuan}元/㎡ × 建安税率${(r.build_tax_rate*100).toFixed(0)}% × 区级分成${(r.build_tax_share*100).toFixed(0)}% = ${r.build_tax}亿元`),
+    h3(`3.商品房销售税费${r.sales_tax}亿元。`),
+    formula(`= 出让地上面积${r.transfer_above}万㎡ × 销售均价${r.sale_yuan}元/㎡ × 综合税率${(r.sales_rate*100).toFixed(1)}% × 区级分成${(r.sales_share*100).toFixed(0)}% + 车位部分 = ${r.sales_tax}亿元`),
+    ...((p.other_inc_items||[]).length>0?[emptyPara(),h2(`（四）其他收入：${r.other_inc_total}亿元`),...(p.other_inc_items||[]).map(it=>body(`　　${it.name}：${it.amount}亿元。`))]:[]),
+    emptyPara(),
+    h1('四、项目资金平衡情况'),
+    body(`（一）按土地出让金区级所得${(p.return_ratio_a*100).toFixed(0)}%返还计算：项目总收入${r.income_a}亿元，总支出${r.total_expenditure}亿元，项目${r.balance_a>=0?'盈余':'亏损'}${Math.abs(r.balance_a).toFixed(2)}亿元。`),
+    formula(`收入 = 土地出让${r.transfer_income}亿 × ${(p.return_ratio_a*100).toFixed(0)}% + 安置房收入${r.settle_income_sub}亿 + 税费${r.tax_sub}亿${r.other_inc_total>0?' + 其他收入'+r.other_inc_total+'亿':''} = ${r.income_a}亿元`),
+    formula(`${r.balance_a>=0?'盈余':'亏损'}额 = 收入${r.income_a}亿 − 支出${r.total_expenditure}亿 = ${r.balance_a>=0?'':'−'}${Math.abs(r.balance_a).toFixed(2)}亿元`),
+    body(`（二）按土地出让金区级所得${(p.return_ratio_b*100).toFixed(0)}%返还计算：项目总收入${r.income_b}亿元，总支出${r.total_expenditure}亿元，项目${r.balance_b>=0?'盈余':'亏损'}${Math.abs(r.balance_b).toFixed(2)}亿元。`),
+    formula(`收入 = 土地出让${r.transfer_income}亿 × ${(p.return_ratio_b*100).toFixed(0)}% + 安置房收入${r.settle_income_sub}亿 + 税费${r.tax_sub}亿${r.other_inc_total>0?' + 其他收入'+r.other_inc_total+'亿':''} = ${r.income_b}亿元`),
+    formula(`${r.balance_b>=0?'盈余':'亏损'}额 = 收入${r.income_b}亿 − 支出${r.total_expenditure}亿 = ${r.balance_b>=0?'':'−'}${Math.abs(r.balance_b).toFixed(2)}亿元`),
+    emptyPara(),
+    h1('五、有关说明及建议'),
+    body('（一）本测算为预估性质，实际征迁成本以丈量确认及评估结果为准，土地出让收入以实际挂牌成交价为准。测算结果仅供领导决策参考。'),
+    body('（二）暂未计入市级储备地可能发生的收储成本及片区外部市政配套分摊费用。如涉及上述费用，需另行测算。'),
+    body('（三）建议加快推进控规调整及土地收储工作，尽早启动首批出让地块挂牌出让，以缩短建设融资周期、降低利息支出，提高项目资金周转效率。'),
+    body('（四）建议结合市场行情适时调整出让策略，合理安排出让节奏，确保土地出让收益最大化。'),
+    emptyPara(),
+    emptyPara(),
+    body('以上报告，妥否，请批示。'),
+    emptyPara(),
+    emptyPara(),
+    new Paragraph({alignment:AlignmentType.RIGHT,children:[new TextRun({text:'区城投集团',font:'仿宋_GB2312',size:32})]}),
+    new Paragraph({alignment:AlignmentType.RIGHT,children:[new TextRun({text:new Date().toLocaleDateString('zh-CN',{year:'numeric',month:'long',day:'numeric'}),font:'仿宋_GB2312',size:32})]}),
+  ]}]});
+
+  Packer.toBlob(doc).then(blob=>{
+    const a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download=(p.project_name||'测算结果')+'_情况报告.docx';
+    a.click();
+  });
 }
 
 // 初始化
