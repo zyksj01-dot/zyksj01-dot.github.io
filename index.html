@@ -274,7 +274,7 @@
       font-size: 0.82rem;
       line-height: 1.8;
       opacity: 0;
-      animation: fadein 0.15s ease forwards;
+      transition: opacity 0.2s ease;
     }
 
     .tline.empty { min-height: 0.9em; }
@@ -410,65 +410,89 @@
     <div class="right">Made with AI</div>
   </footer>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
   const termLines = [
-    { type: 'cmd',    text: 'whoami' },
-    { type: 'out',    text: 'Ztq — exploring AI, rebuilding at 36.' },
+    { type: 'cmd', text: 'whoami' },
+    { type: 'out', text: 'Ztq - exploring AI, rebuilding at 36.' },
     { type: 'empty' },
-    { type: 'cmd',    text: 'status' },
-    { type: 'out',    text: 'Currently: Reborn & learning.' },
-    { type: 'out',    text: 'Est. 2025 — Ongoing' },
+    { type: 'cmd', text: 'status' },
+    { type: 'out', text: 'Currently: Reborn & learning.' },
+    { type: 'out', text: 'Est. 2026 - Ongoing' },
     { type: 'empty' },
-    { type: 'cmd',    text: 'ls skills/' },
-    { type: 'out',    text: 'AI   building   shipping   growing' },
+    { type: 'cmd', text: 'ls skills/' },
+    { type: 'out', text: 'AI   building   shipping   growing' },
     { type: 'empty' },
     { type: 'cursor' },
   ];
 
-  const body = document.getElementById('termBody');
-  let delay = 900;
+  window.addEventListener('DOMContentLoaded', () => {
+    const body = document.getElementById('termBody');
+    let delay = 900;
 
-  termLines.forEach((line) => {
-    const el = document.createElement('div');
-    el.className = 'tline';
-    el.style.animationDelay = delay + 'ms';
+    termLines.forEach((line) => {
+      const el = document.createElement('div');
+      el.className = 'tline';
+      el.style.opacity = '0';
 
-    if (line.type === 'cmd') {
-      el.innerHTML = `<span class="prompt">#</span><span class="cmd-text">${line.text}</span>`;
-      delay += 340;
-    } else if (line.type === 'out') {
-      el.innerHTML = `<span class="out-text">${line.text}</span>`;
-      delay += 190;
-    } else if (line.type === 'empty') {
-      el.classList.add('empty');
-      delay += 80;
-    } else if (line.type === 'cursor') {
-      el.innerHTML = `<span class="prompt">#</span> <span class="typewriter" id="typewriter"></span>`;
-      delay += 200;
-    }
+      if (line.type === 'cmd') {
+        el.innerHTML = `<span class="prompt">#</span> <span class="cmd-text">${line.text}</span>`;
+      } else if (line.type === 'out') {
+        el.innerHTML = `<span class="out-text">${line.text}</span>`;
+      } else if (line.type === 'empty') {
+        el.classList.add('empty');
+      } else if (line.type === 'cursor') {
+        el.innerHTML = `<span class="prompt">#</span> <span class="typewriter"></span>`;
+      }
 
-    body.appendChild(el);
+      body.appendChild(el);
+
+      const t = delay;
+      setTimeout(() => {
+        el.style.transition = 'opacity 0.2s ease';
+        el.style.opacity = '1';
+
+        // start typewriter after cursor line appears
+        if (line.type === 'cursor') {
+          const tw = el.querySelector('.typewriter');
+          startTypewriter(tw);
+        }
+      }, t);
+
+      if (line.type === 'cmd')         delay += 340;
+      else if (line.type === 'out')    delay += 190;
+      else if (line.type === 'empty')  delay += 80;
+      else if (line.type === 'cursor') delay += 200;
+    });
   });
 
-  // Typewriter loop - starts after all lines appear
-  const tw = document.getElementById('typewriter');
-  const twText = 'waiting for input...';
-  let twIndex = 0;
-  let twDeleting = false;
+  function startTypewriter(tw) {
+    const text = 'waiting for input...';
+    let index = 0;
+    let deleting = false;
 
-  function typeLoop() {
-    if (!twDeleting) {
-      tw.textContent = twText.slice(0, twIndex + 1);
-      twIndex++;
-      if (twIndex === twText.length) {
-        twDeleting = true;
-        setTimeout(typeLoop, 1800);
-        return;
+    function loop() {
+      if (!deleting) {
+        tw.textContent = text.slice(0, index + 1);
+        index++;
+        if (index === text.length) {
+          deleting = true;
+          setTimeout(loop, 1800);
+          return;
+        }
+        setTimeout(loop, 80);
+      } else {
+        tw.textContent = text.slice(0, index - 1);
+        index--;
+        if (index === 0) {
+          deleting = false;
+          setTimeout(loop, 600);
+          return;
+        }
+        setTimeout(loop, 40);
       }
-      setTimeout(typeLoop, 80);
-    } else {
-      tw.textContent = twText.slice(0, twIndex - 1);
-      twIndex--;
-      if (twIndex === 0) {
-        twDeleting = false;
-        setTimeout(t
+    }
+    setTimeout(loop, 300);
+  }
+</script>
+</body>
+</html>
