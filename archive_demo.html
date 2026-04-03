@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>城厢区城投集团 · 工程档案管理系统 V2</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:"微软雅黑","PingFang SC",sans-serif;font-size:14px;background:#eef0f4;color:#1a1a2e;}
+:root{
+  --navy:#0f2540;--navy2:#1a3a5c;--navy3:#253a55;--gold:#c8a84b;
+  --bg:#eef0f4;--card:#ffffff;--sidebar:#1e3350;
+  --nav-txt:#b0c4d8;--text:#1a1a2e;--muted:#6b7280;--border:#d1d5db;
+  --green:#1a7a3c;--red:#c0392b;--warn:#d97706;--row-alt:#f8fafc;
+  --blue:#0891b2;--purple:#6366f1;
+}
+button{font-family:inherit;cursor:pointer;border:none;outline:none;}
+input,select,textarea{font-family:inherit;font-size:14px;outline:none;}
+table{border-collapse:collapse;width:100%;}
+
+/* ===== LOGIN ===== */
+#login-screen{
+  display:flex;align-items:center;justify-content:center;
+  min-height:100vh;background:var(--navy);
+}
+.login-box{width:380px;}
+.login-top{text-align:center;padding:24px 0 16px;}
+.login-icon{font-size:40px;display:block;margin-bottom:8px;}
+.login-title{color:#fff;font-size:17px;font-weight:700;margin-bottom:4px;}
+.login-sub{color:var(--nav-txt);font-size:10px;}
+.login-divider{height:2px;background:var(--gold);margin:0 40px 20px;}
+.login-card{background:#fff;margin:0 32px;padding:24px 28px 20px;border-radius:2px;}
+.login-label{color:var(--muted);font-size:13px;margin-bottom:4px;display:block;}
+.login-input{width:100%;border:1px solid var(--border);padding:9px 10px;font-size:14px;margin-bottom:14px;}
+.login-input:focus{border-color:var(--navy2);}
+.login-err{color:var(--red);font-size:12px;min-height:20px;margin-bottom:8px;}
+.login-btn{
+  width:100%;background:var(--navy);color:#fff;padding:12px;
+  font-size:14px;font-weight:700;border:none;cursor:pointer;letter-spacing:4px;
+}
+.login-btn:hover{background:var(--navy2);}
+.login-footer{text-align:center;color:#3a5a7a;font-size:10px;padding:14px 0;}
+
+/* ===== MAIN APP ===== */
+#app-screen{display:none;flex-direction:column;height:100vh;}
+#app-screen.visible{display:flex;}
+
+/* topbar */
+.topbar{
+  background:var(--navy);height:52px;display:flex;align-items:center;
+  flex-shrink:0;position:relative;
+}
+.topbar-accent{width:4px;height:100%;background:var(--gold);flex-shrink:0;}
+.topbar-title{color:#fff;font-size:15px;font-weight:700;padding:0 12px;flex:1;}
+.topbar-right{display:flex;align-items:center;gap:8px;padding-right:16px;}
+.topbar-user-label{color:var(--muted);font-size:12px;}
+.topbar-username{color:var(--nav-txt);font-size:12px;padding:0 8px;}
+.topbar-role{font-size:11px;font-weight:700;padding:2px 8px;}
+.role-admin{background:var(--gold);color:var(--navy);}
+.role-user{background:#3a6a9a;color:#fff;}
+.topbar-logout{background:var(--red);color:#fff;padding:4px 12px;font-size:12px;cursor:pointer;}
+.topbar-logout:hover{background:#a93226;}
+
+/* body layout */
+.app-body{display:flex;flex:1;overflow:hidden;}
+
+/* sidebar */
+.sidebar{
+  width:150px;background:var(--sidebar);flex-shrink:0;
+  display:flex;flex-direction:column;overflow-y:auto;
+}
+.sidebar-menu-title{color:#4a6a8a;font-size:12px;text-align:center;padding:12px 0 8px;}
+.sidebar-divider{height:1px;background:#2a4a6a;margin:0 14px 8px;}
+.nav-item{
+  display:block;padding:10px 14px;color:var(--nav-txt);font-size:12px;
+  cursor:pointer;text-align:left;background:transparent;width:100%;
+  transition:background .15s;
+}
+.nav-item:hover{background:var(--navy2);}
+.nav-item.active{background:var(--gold);color:var(--navy);font-weight:700;}
+.nav-sep{color:#2a4a6a;font-size:12px;padding:4px 12px;pointer-events:none;}
+
+/* content */
+.content{flex:1;overflow-y:auto;background:var(--bg);}
+.page{display:none;padding:20px 24px;}
+.page.active{display:block;}
+
+/* section label */
+.section-label{display:flex;align-items:center;margin-bottom:12px;}
+.section-bar{width:4px;height:24px;background:var(--gold);margin-right:10px;flex-shrink:0;}
+.section-label h2{font-size:16px;font-weight:700;color:var(--navy);}
+
+/* cards */
+.card{background:var(--card);border-radius:2px;}
+
+/* stat cards row */
+.stat-row{display:flex;gap:10px;margin-bottom:18px;}
+.stat-card{
+  flex:1;background:var(--card);padding:14px;min-width:0;
+}
+.stat-icon{font-size:20px;margin-bottom:4px;}
+.stat-val{font-size:26px;font-weight:700;line-height:1.1;}
+.stat-lbl{font-size:12px;color:var(--muted);margin-bottom:6px;}
+.stat-bar{height:3px;margin-top:6px;}
+
+/* toolbar */
+.toolbar{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.toolbar-right{margin-left:auto;display:flex;gap:8px;}
+
+/* buttons */
+.btn{
+  padding:5px 14px;font-size:12px;font-weight:700;cursor:pointer;
+  border:none;color:#fff;transition:filter .15s;white-space:nowrap;
+}
+.btn:hover{filter:brightness(0.88);}
+.btn-navy{background:var(--navy);}
+.btn-navy2{background:var(--navy3);}
+.btn-green{background:var(--green);}
+.btn-red{background:var(--red);}
+.btn-muted{background:var(--muted);}
+.btn-sm{padding:3px 10px;font-size:11px;}
+.btn-lg{padding:9px 18px;font-size:14px;}
+
+/* form rows */
+.form-card{background:var(--card);padding:24px 28px;}
+.form-row{display:flex;align-items:flex-start;margin-bottom:14px;}
+.form-label{
+  width:130px;text-align:right;padding-right:10px;color:var(--muted);
+  font-size:13px;line-height:32px;flex-shrink:0;
+}
+.form-ctrl{flex:1;}
+.form-input{
+  border:1px solid var(--border);padding:6px 10px;font-size:13px;width:100%;
+}
+.form-input:focus{border-color:var(--navy2);}
+.form-input[readonly]{background:var(--bg);}
+.form-input-w{width:200px;}
+.form-input-sm{width:120px;}
+.form-textarea{border:1px solid var(--border);padding:6px 10px;font-size:13px;width:100%;resize:vertical;height:64px;}
+.form-select{border:1px solid var(--border);padding:6px 8px;font-size:13px;background:#fff;}
+.form-hint{font-size:11px;color:var(--muted);margin-top:2px;}
+
+/* step label */
+.step-tag{
+  background:var(--gold);color:var(--navy);font-weight:700;
+  font-size:12px;padding:3px 8px;margin-right:10px;flex-shrink:0;
+  line-height:32px;
+}
+.step-name{width:160px;font-weight:700;font-size:13px;flex-shrink:0;line-height:32px;}
+.step-content{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+
+/* radio group */
+.radio-group{display:flex;gap:12px;flex-wrap:wrap;}
+.radio-group label{display:flex;align-items:center;gap:4px;cursor:pointer;font-size:13px;}
+
+/* table / treeview */
+.tree-wrap{background:var(--card);overflow:hidden;}
+.tree-table{width:100%;border-collapse:collapse;}
+.tree-table th{
+  background:#dce3ee;font-size:13px;font-weight:700;
+  padding:8px 10px;text-align:center;white-space:nowrap;
+}
+.tree-table td{
+  padding:7px 10px;font-size:13px;text-align:center;
+  border-bottom:1px solid #f0f0f0;white-space:nowrap;
+  max-width:220px;overflow:hidden;text-overflow:ellipsis;
+}
+.tree-table tr.even td{background:#fff;}
+.tree-table tr.odd td{background:var(--row-alt);}
+.tree-table tr.group-row td{
+  background:#e8edf5;font-weight:700;color:var(--navy);text-align:left;
+}
+.tree-table tr.data-row:hover td{background:#dce6f5;cursor:pointer;}
+.tree-table tr.selected td{background:var(--navy2)!important;color:#fff;}
+.scrollable-table{overflow-x:auto;overflow-y:auto;max-height:500px;}
+.scrollable-table-lg{overflow-x:auto;overflow-y:auto;max-height:580px;}
+
+/* tabs (notebook) */
+.nb-tabs{display:flex;border-bottom:2px solid var(--border);margin-bottom:0;gap:2px;}
+.nb-tab{
+  padding:8px 16px;font-size:13px;cursor:pointer;border:1px solid transparent;
+  border-bottom:none;color:var(--muted);background:#f5f7fa;
+}
+.nb-tab.active{background:#fff;color:var(--navy);font-weight:700;border-color:var(--border);}
+.nb-panel{display:none;background:#fff;border:1px solid var(--border);border-top:none;padding:8px;}
+.nb-panel.active{display:block;}
+
+/* info card */
+.info-card{background:var(--card);padding:12px 20px;margin-bottom:14px;}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px 0;}
+.info-field{display:flex;align-items:center;padding:4px 24px;}
+.info-key{color:var(--muted);font-size:12px;margin-right:6px;white-space:nowrap;}
+.info-val{font-size:13px;font-weight:700;}
+
+/* search bar */
+.search-bar{background:var(--card);padding:12px 16px;margin-bottom:12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.search-bar label{font-size:13px;white-space:nowrap;}
+.search-input{border:1px solid var(--border);padding:5px 10px;font-size:13px;width:200px;}
+.search-select{border:1px solid var(--border);padding:5px 8px;font-size:13px;background:#fff;}
+
+/* modal */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);
+  z-index:1000;align-items:center;justify-content:center;
+}
+.modal-overlay.open{display:flex;}
+.modal{background:#fff;width:440px;max-width:95vw;max-height:90vh;overflow-y:auto;}
+.modal-hdr{display:flex;align-items:center;padding:14px 20px;color:#fff;font-size:15px;font-weight:700;}
+.modal-hdr.navy{background:var(--navy);}
+.modal-hdr.red{background:var(--red);}
+.modal-body{padding:20px 28px;}
+.modal-info-box{background:#fff5f5;padding:12px;margin-bottom:14px;}
+.modal-info-box p{font-size:13px;margin-bottom:4px;}
+.modal-info-box .warn-txt{color:var(--red);font-size:12px;margin-top:6px;}
+.modal-row{margin-bottom:12px;}
+.modal-row label{display:block;color:var(--muted);font-size:13px;margin-bottom:4px;}
+.modal-row input{width:100%;border:1px solid var(--border);padding:7px 10px;font-size:13px;}
+.modal-row input:focus{border-color:var(--red);}
+.modal-err{color:var(--red);font-size:12px;min-height:18px;margin-top:4px;}
+.modal-btns{display:flex;justify-content:space-between;margin-top:16px;}
+
+/* upload left panel */
+.upload-layout{display:grid;grid-template-columns:2fr 3fr;gap:10px;}
+.upload-left{background:var(--card);padding:12px;}
+.upload-right{background:var(--card);padding:20px 24px;}
+.sel-proj-box{background:#f0f4fa;padding:8px 12px;margin-bottom:16px;display:flex;align-items:center;gap:6px;font-size:13px;}
+.sel-proj-name{color:var(--navy);font-weight:700;}
+
+/* stats table */
+.stats-radio{display:flex;gap:16px;align-items:center;flex-wrap:wrap;}
+
+/* audit log search */
+.log-search-bar{display:flex;gap:8px;align-items:center;margin-bottom:10px;}
+
+/* scrollbar */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:#f0f0f0;}
+::-webkit-scrollbar-thumb{background:#b0b8c8;border-radius:3px;}
+
+/* password change */
+.pwd-form{background:var(--card);padding:28px 32px;display:inline-block;min-width:380px;}
+.pwd-row{display:flex;align-items:center;margin-bottom:12px;}
+.pwd-label{width:120px;text-align:right;padding-right:10px;color:var(--muted);font-size:13px;flex-shrink:0;}
+.pwd-input{width:220px;border:1px solid var(--border);padding:6px 10px;font-size:13px;}
+.pwd-hint{width:120px;margin-left:130px;color:var(--muted);font-size:11px;margin-bottom:12px;}
+
+/* settings */
+.settings-form{background:var(--card);padding:24px 28px;}
+.settings-row{display:flex;align-items:center;margin-bottom:8px;}
+.settings-label{width:140px;text-align:right;padding-right:10px;color:var(--muted);font-size:13px;flex-shrink:0;}
+.settings-hint{margin-left:140px;color:var(--muted);font-size:11px;margin-bottom:18px;}
+
+/* scrollable form */
+.form-scroll{max-height:calc(100vh - 160px);overflow-y:auto;}
+
+/* notice */
+.demo-notice{
+  background:#fff3cd;border:1px solid #ffc107;padding:8px 14px;
+  font-size:12px;color:#856404;margin-bottom:12px;border-radius:2px;
+}
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-top">
+      <span class="login-icon">🏗</span>
+      <div class="login-title">城厢区城投集团</div>
+      <div class="login-sub">工程档案管理系统&nbsp;&nbsp;V2</div>
+    </div>
+    <div class="login-divider"></div>
+    <div class="login-card">
+      <label class="login-label">用 户 名</label>
+      <input class="login-input" id="inp-user" placeholder="" autocomplete="off">
+      <label class="login-label">密&nbsp;&nbsp;&nbsp;&nbsp;码</label>
+      <input class="login-input" id="inp-pwd" type="password" placeholder="">
+      <div class="login-err" id="login-err"></div>
+      <button class="login-btn" onclick="doLogin()">登&nbsp;&nbsp;&nbsp;&nbsp;录</button>
+    </div>
+    <div class="login-footer">© 城厢区城投集团&nbsp;&nbsp;档案管理部门</div>
+    <div style="text-align:center;color:#4a6a8a;font-size:10px;padding-bottom:8px;">
+      演示账号：admin / admin123&nbsp;&nbsp;或&nbsp;&nbsp;user / user123
+    </div>
+  </div>
+</div>
+
+<!-- ========== MAIN APP ========== -->
+<div id="app-screen">
+  <!-- topbar -->
+  <div class="topbar">
+    <div class="topbar-accent"></div>
+    <div class="topbar-title">🏗&nbsp;&nbsp;城厢区城投集团工程档案管理系统&nbsp;&nbsp;V2</div>
+    <div class="topbar-right">
+      <span class="topbar-user-label">当前用户：</span>
+      <span class="topbar-username" id="tb-username"></span>
+      <span class="topbar-role" id="tb-role"></span>
+      <button class="topbar-logout" onclick="doLogout()">退出登录</button>
+    </div>
+  </div>
+
+  <!-- body -->
+  <div class="app-body">
+    <!-- sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-menu-title">功 能 菜 单</div>
+      <div class="sidebar-divider"></div>
+      <button class="nav-item" data-page="dashboard" onclick="navTo('dashboard')">📊&nbsp;&nbsp;工&nbsp;&nbsp;作&nbsp;&nbsp;台</button>
+      <button class="nav-item" data-page="stats" onclick="navTo('stats')">📈&nbsp;&nbsp;项 目 统 计</button>
+      <button class="nav-item" data-page="projlist" onclick="navTo('projlist')">📋&nbsp;&nbsp;项 目 列 表</button>
+      <button class="nav-item" data-page="createproj" onclick="navTo('createproj')">➕&nbsp;&nbsp;创 建 项 目</button>
+      <button class="nav-item" data-page="upload" onclick="navTo('upload')">📁&nbsp;&nbsp;上 传 档 案</button>
+      <button class="nav-item" data-page="search" onclick="navTo('search')">🔍&nbsp;&nbsp;档 案 搜 索</button>
+      <button class="nav-item" data-page="changepwd" onclick="navTo('changepwd')">🔐&nbsp;&nbsp;修 改 密 码</button>
+      <div class="nav-sep" id="admin-sep" style="display:none">──────────────</div>
+      <button class="nav-item" data-page="usermgmt" id="nav-usermgmt" style="display:none" onclick="navTo('usermgmt')">👥&nbsp;&nbsp;用 户 管 理</button>
+      <button class="nav-item" data-page="settings" id="nav-settings" style="display:none" onclick="navTo('settings')">⚙&nbsp;&nbsp;&nbsp;系 统 设 置</button>
+      <button class="nav-item" data-page="auditlog" id="nav-auditlog" style="display:none" onclick="navTo('auditlog')">📜&nbsp;&nbsp;操 作 日 志</button>
+    </div>
+
+    <!-- content -->
+    <div class="content" id="content">
+
+      <!-- === DASHBOARD === -->
+      <div class="page" id="page-dashboard">
+        <div class="section-label"><div class="section-bar"></div><h2>📊&nbsp;&nbsp;工作台</h2></div>
+        <div class="stat-row" id="stat-row"></div>
+        <div class="section-label"><div class="section-bar"></div><h2>最近项目</h2></div>
+        <div class="tree-wrap">
+          <div class="scrollable-table">
+            <table class="tree-table">
+              <thead><tr>
+                <th>项目编号</th><th>项目名称</th><th>负责人</th><th>状态</th><th>档案数</th>
+              </tr></thead>
+              <tbody id="dash-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- === PROJECT STATS === -->
+      <div class="page" id="page-stats">
+        <div class="section-label"><div class="section-bar"></div><h2>📈&nbsp;&nbsp;项目统计</h2></div>
+        <div class="toolbar">
+          <span style="font-size:13px;">统计口径：</span>
+          <div class="stats-radio">
+            <label><input type="radio" name="stats-dim" value="type" checked onchange="reloadStats()"> 按项目类型</label>
+            <label><input type="radio" name="stats-dim" value="status" onchange="reloadStats()"> 按项目状态</label>
+            <label><input type="radio" name="stats-dim" value="nature" onchange="reloadStats()"> 按项目性质</label>
+          </div>
+          <button class="btn btn-navy2 btn-sm" onclick="reloadStats()">🔄 刷新</button>
+        </div>
+        <div class="tree-wrap">
+          <div class="scrollable-table-lg">
+            <table class="tree-table">
+              <thead><tr>
+                <th>类别</th><th>项目个数</th><th>项目总投资（万元）</th><th>建安投资（万元）</th><th>已支付工程款（万元）</th>
+              </tr></thead>
+              <tbody id="stats-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- === PROJECT LIST === -->
+      <div class="page" id="page-projlist">
+        <div class="section-label"><div class="section-bar"></div><h2>📋&nbsp;&nbsp;项目列表</h2></div>
+        <div class="toolbar">
+          <span style="font-size:13px;">🔍 搜索：</span>
+          <input class="search-input" id="proj-search" placeholder="编号/名称/负责人" oninput="reloadProjList()">
+          <span style="font-size:13px;">状态：</span>
+          <select class="search-select" id="proj-status-filter" onchange="reloadProjList()">
+            <option value="">全部</option>
+            <option>前期</option><option>在建</option><option>竣（完）工</option><option>暂停</option><option>取消</option>
+          </select>
+          <button class="btn btn-navy2 btn-sm" onclick="reloadProjList()">🔄 刷新</button>
+          <div class="toolbar-right">
+            <button class="btn btn-red btn-sm" id="btn-del-proj" onclick="deleteProjectUI()" style="display:none">🗑 删除项目</button>
+            <button class="btn btn-green btn-sm" onclick="navTo('createproj')">➕ 新建项目</button>
+          </div>
+        </div>
+        <div class="tree-wrap">
+          <div class="scrollable-table-lg">
+            <table class="tree-table">
+              <thead><tr>
+                <th style="width:100px;text-align:left;padding-left:14px">项目类型</th>
+                <th>项目档案编号</th><th>项目名称</th><th>负责人</th><th>项目状态</th><th>档案数</th>
+              </tr></thead>
+              <tbody id="proj-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- === CREATE PROJECT === -->
+      <div class="page" id="page-createproj">
+        <div class="section-label"><div class="section-bar"></div><h2>➕&nbsp;&nbsp;创建新项目</h2></div>
+        <div class="form-scroll">
+        <div class="form-card" id="create-form">
+          <!-- step 1 -->
+          <div class="form-row">
+            <span class="step-tag">第一步</span>
+            <span class="step-name">项目类型 *</span>
+            <div class="step-content radio-group" id="cp-type-group"></div>
+          </div>
+          <!-- step 2 -->
+          <div class="form-row">
+            <span class="step-tag">第二步</span>
+            <span class="step-name">项目立项时间 *</span>
+            <div class="step-content">
+              <select class="form-select" id="cp-year" onchange="updateProjNo()"></select> 年
+              <select class="form-select" id="cp-month" onchange="updateProjNo()" style="width:60px">
+                <option value="">月</option>
+              </select> 月
+            </div>
+          </div>
+          <!-- step 3 -->
+          <div class="form-row">
+            <span class="step-tag">第三步</span>
+            <span class="step-name">项目状态 *</span>
+            <div class="step-content radio-group" id="cp-status-group">
+              <label><input type="radio" name="cp-status" value="前期" onchange="updateProjNo()"> 前期</label>
+              <label><input type="radio" name="cp-status" value="在建" onchange="updateProjNo()"> 在建</label>
+              <label><input type="radio" name="cp-status" value="竣（完）工" onchange="updateProjNo()"> 竣（完）工</label>
+            </div>
+          </div>
+          <!-- step 4 -->
+          <div class="form-row">
+            <span class="step-tag">第四步</span>
+            <span class="step-name">项目性质 *</span>
+            <div class="step-content radio-group">
+              <label><input type="radio" name="cp-nature" value="政府性"> 政府性</label>
+              <label><input type="radio" name="cp-nature" value="经营性"> 经营性</label>
+            </div>
+          </div>
+          <!-- step 5 -->
+          <div class="form-row">
+            <span class="step-tag">第五步</span>
+            <span class="step-name">项目档案编号 *</span>
+            <div class="step-content">
+              <input class="form-input form-input-w" id="cp-no" readonly style="background:#f0f4fa;color:var(--navy);font-weight:700;">
+              <span style="font-size:11px;color:var(--muted)">（根据前三步自动生成）</span>
+            </div>
+          </div>
+          <!-- step 6 -->
+          <div class="form-row">
+            <span class="step-tag">第六步</span>
+            <span class="step-name">项目名称 *</span>
+            <div class="step-content">
+              <input class="form-input" id="cp-name" style="width:320px">
+            </div>
+          </div>
+          <!-- step 7 -->
+          <div class="form-row">
+            <span class="step-tag">第七步</span>
+            <span class="step-name">项目负责人</span>
+            <div class="step-content">
+              <input class="form-input form-input-w" id="cp-manager">
+            </div>
+          </div>
+          <!-- step 8 -->
+          <div class="form-row">
+            <span class="step-tag">第八步</span>
+            <span class="step-name">项目开工时间</span>
+            <div class="step-content">
+              <select class="form-select" id="cp-sy" style="width:80px"></select> 年
+              <select class="form-select" id="cp-sm" style="width:56px"><option value="">月</option></select> 月
+              <select class="form-select" id="cp-sd" style="width:56px"><option value="">日</option></select> 日
+            </div>
+          </div>
+          <!-- step 9 -->
+          <div class="form-row">
+            <span class="step-tag">第九步</span>
+            <span class="step-name">竣（完）工时间</span>
+            <div class="step-content">
+              <select class="form-select" id="cp-ey" style="width:80px"></select> 年
+              <select class="form-select" id="cp-em" style="width:56px"><option value="">月</option></select> 月
+              <select class="form-select" id="cp-ed" style="width:56px"><option value="">日</option></select> 日
+            </div>
+          </div>
+          <!-- step 10 -->
+          <div class="form-row">
+            <span class="step-tag">第十步</span>
+            <span class="step-name">项目总投资（万元）</span>
+            <div class="step-content">
+              <input class="form-input form-input-sm" id="cp-budget" type="number" min="0"> 万元
+            </div>
+          </div>
+          <!-- step 11 -->
+          <div class="form-row">
+            <span class="step-tag">第十一步</span>
+            <span class="step-name">建安投资（万元）</span>
+            <div class="step-content">
+              <input class="form-input form-input-sm" id="cp-jianan" type="number" min="0"> 万元
+            </div>
+          </div>
+          <!-- step 12 -->
+          <div class="form-row">
+            <span class="step-tag">第十二步</span>
+            <span class="step-name">已支付工程款（万元）</span>
+            <div class="step-content">
+              <input class="form-input form-input-sm" id="cp-paid" type="number" min="0"> 万元（选填）
+            </div>
+          </div>
+          <hr style="border:none;border-top:1px solid var(--border);margin:8px 0 12px">
+          <!-- desc -->
+          <div class="form-row">
+            <span class="step-tag" style="visibility:hidden">第X步</span>
+            <span class="step-name">备&nbsp;&nbsp;注&nbsp;&nbsp;说&nbsp;&nbsp;明</span>
+            <div class="step-content" style="width:400px">
+              <textarea class="form-textarea" id="cp-desc" style="width:400px"></textarea>
+            </div>
+          </div>
+          <!-- btn -->
+          <div class="form-row" style="margin-top:12px">
+            <span class="step-tag" style="visibility:hidden">X</span>
+            <span class="step-name"></span>
+            <div class="step-content">
+              <button class="btn btn-navy btn-lg" onclick="saveProject()">💾&nbsp;&nbsp;保存项目</button>
+              <button class="btn btn-muted" style="padding:9px 16px" onclick="resetCreateForm()">清空重填</button>
+            </div>
+          </div>
+        </div>
+        </div>
+      </div>
+
+      <!-- === PROJECT DETAIL === -->
+      <div class="page" id="page-projdetail">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px;">
+          <div class="section-label" style="margin-bottom:0"><div class="section-bar"></div><h2 id="detail-title">📂 项目详情</h2></div>
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-green btn-sm" id="detail-upload-btn" onclick="">➕ 上传档案</button>
+            <button class="btn btn-muted btn-sm" onclick="navTo('projlist')">◀ 返回列表</button>
+          </div>
+        </div>
+        <div class="info-card">
+          <div class="info-grid" id="detail-info-grid"></div>
+        </div>
+        <div class="nb-tabs" id="detail-tabs"></div>
+        <div id="detail-panels"></div>
+      </div>
+
+      <!-- === UPLOAD === -->
+      <div class="page" id="page-upload">
+        <div class="section-label"><div class="section-bar"></div><h2>📁&nbsp;&nbsp;上传档案文件</h2></div>
+        <div class="demo-notice">💡 演示模式：文件信息将记录在浏览器本地，实际文件不会上传到服务器。</div>
+        <div class="upload-layout">
+          <div class="upload-left">
+            <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:8px">选择项目</div>
+            <div style="display:flex;gap:4px;margin-bottom:8px">
+              <input class="search-input" id="up-search" placeholder="搜索项目" oninput="filterUploadTree()" style="flex:1;width:auto">
+              <button class="btn btn-navy2 btn-sm" onclick="filterUploadTree()">🔍</button>
+            </div>
+            <div class="scrollable-table" style="max-height:420px">
+              <table class="tree-table">
+                <thead><tr><th style="text-align:left;padding-left:8px">类型</th><th>档案编号</th><th>项目名称</th></tr></thead>
+                <tbody id="up-proj-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="upload-right">
+            <div class="sel-proj-box">
+              <span style="color:var(--muted);font-size:13px">已选项目：</span>
+              <span class="sel-proj-name" id="up-sel-label">（未选择）</span>
+            </div>
+            <div style="display:grid;gap:12px">
+              <div class="form-row" style="margin-bottom:0">
+                <span class="form-label">档案类别 *</span>
+                <select class="form-select form-ctrl" id="up-cat"></select>
+              </div>
+              <div class="form-row" style="margin-bottom:0">
+                <span class="form-label">选择文件 *</span>
+                <div class="form-ctrl" style="display:flex;gap:6px;align-items:center">
+                  <input class="form-input" id="up-file-name" readonly placeholder="点击浏览选择文件" style="flex:1">
+                  <input type="file" id="up-file-input" style="display:none" onchange="onFileSelected()">
+                  <button class="btn btn-navy2 btn-sm" onclick="document.getElementById('up-file-input').click()">浏览...</button>
+                </div>
+              </div>
+              <div class="form-row" style="margin-bottom:0">
+                <span class="form-label">档案说明</span>
+                <textarea class="form-textarea form-ctrl" id="up-desc" style="width:100%"></textarea>
+              </div>
+              <div>
+                <button class="btn btn-green btn-lg" onclick="doUpload()">⬆&nbsp;&nbsp;确认上传归档</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- === SEARCH === -->
+      <div class="page" id="page-search">
+        <div class="section-label"><div class="section-bar"></div><h2>🔍&nbsp;&nbsp;档案搜索</h2></div>
+        <div class="search-bar">
+          <label>关键词：</label>
+          <input class="search-input" id="s-kw" placeholder="" onkeydown="if(event.key==='Enter')doSearch()">
+          <label>档案类别：</label>
+          <select class="search-select" id="s-cat">
+            <option value="">全部</option>
+          </select>
+          <button class="btn btn-navy btn-sm" onclick="doSearch()">🔍 搜索</button>
+          <button class="btn btn-red btn-sm" id="btn-del-archive" onclick="deleteArchiveUI()" style="display:none">🗑 删除档案</button>
+        </div>
+        <div class="tree-wrap">
+          <div class="scrollable-table-lg">
+            <table class="tree-table">
+              <thead><tr>
+                <th>项目编号</th><th>项目名称</th><th>档案类别</th><th>原始文件名</th><th>上传日期</th><th>上传人</th><th>说明</th>
+              </tr></thead>
+              <tbody id="search-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- === CHANGE PWD === -->
+      <div class="page" id="page-changepwd">
+        <div class="section-label"><div class="section-bar"></div><h2>🔐&nbsp;&nbsp;修改密码</h2></div>
+        <div class="pwd-form">
+          <div class="pwd-row">
+            <span class="pwd-label">当前密码 *</span>
+            <input class="pwd-input" id="pwd-old" type="password">
+          </div>
+          <div class="pwd-row">
+            <span class="pwd-label">新密码 *</span>
+            <input class="pwd-input" id="pwd-new" type="password">
+          </div>
+          <div class="pwd-row">
+            <span class="pwd-label">确认新密码 *</span>
+            <input class="pwd-input" id="pwd-cfm" type="password">
+          </div>
+          <div class="pwd-hint">（新密码至少 6 位）</div>
+          <button class="btn btn-navy btn-lg" onclick="doChangePwd()">✅&nbsp;&nbsp;确认修改</button>
+        </div>
+      </div>
+
+      <!-- === USER MGMT === -->
+      <div class="page" id="page-usermgmt">
+        <div class="section-label"><div class="section-bar"></div><h2>👥&nbsp;&nbsp;用户管理</h2></div>
+        <div class="toolbar">
+          <button class="btn btn-green btn-sm" onclick="openUserDialog()">➕ 新增用户</button>
+          <button class="btn btn-navy2 btn-sm" onclick="reloadUsers()">🔄 刷新</button>
+        </div>
+        <div class="tree-wrap">
+          <div class="scrollable-table-lg">
+            <table class="tree-table">
+              <thead><tr>
+                <th>ID</th><th>用户名</th><th>角色</th><th>状态</th><th>失败次数</th><th>锁定至</th><th>最后登录</th><th>创建时间</th><th>操作</th>
+              </tr></thead>
+              <tbody id="users-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- === SETTINGS === -->
+      <div class="page" id="page-settings">
+        <div class="section-label"><div class="section-bar"></div><h2>⚙&nbsp;&nbsp;系统设置</h2></div>
+        <div class="settings-form">
+          <div class="settings-row">
+            <span class="settings-label">文件存储根目录：</span>
+            <input class="form-input" id="setting-root" style="width:360px">
+          </div>
+          <div class="settings-hint">档案目录结构：根目录 / 项目编号_项目名称 / 档案类别 / 文件</div>
+          <button class="btn btn-navy btn-lg" onclick="saveSettings()">💾&nbsp;&nbsp;保存设置</button>
+        </div>
+      </div>
+
+      <!-- === AUDIT LOG === -->
+      <div class="page" id="page-auditlog">
+        <div class="section-label"><div class="section-bar"></div><h2>📜&nbsp;&nbsp;操作日志</h2></div>
+        <div class="log-search-bar">
+          <span style="font-size:13px">🔍 搜索：</span>
+          <input class="search-input" id="log-kw" onkeydown="if(event.key==='Enter')reloadAuditLog()">
+          <button class="btn btn-navy btn-sm" onclick="reloadAuditLog()">🔍 搜索</button>
+          <button class="btn btn-navy2 btn-sm" onclick="reloadAuditLog()">🔄 刷新</button>
+        </div>
+        <div class="tree-wrap">
+          <div class="scrollable-table-lg">
+            <table class="tree-table">
+              <thead><tr><th>时间</th><th>用户</th><th>操作</th><th style="min-width:300px">详情</th></tr></thead>
+              <tbody id="log-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /app-body -->
+</div><!-- /app-screen -->
+
+<!-- ========== MODALS ========== -->
+
+<!-- Delete project modal -->
+<div class="modal-overlay" id="modal-delproj">
+  <div class="modal">
+    <div class="modal-hdr red">⚠&nbsp;&nbsp;删除项目确认</div>
+    <div class="modal-body">
+      <div class="modal-info-box">
+        <p id="delproj-no" style="font-weight:700"></p>
+        <p id="delproj-name"></p>
+        <p class="warn-txt" id="delproj-warn"></p>
+      </div>
+      <div class="modal-row">
+        <label>请输入您的管理员密码以确认删除：</label>
+        <input type="password" id="delproj-pwd" onkeydown="if(event.key==='Enter')confirmDelProj()">
+      </div>
+      <div class="modal-err" id="delproj-err"></div>
+      <div class="modal-btns">
+        <button class="btn btn-muted" onclick="closeModal('modal-delproj')">取&nbsp;&nbsp;消</button>
+        <button class="btn btn-red" onclick="confirmDelProj()">确认删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Delete archive modal -->
+<div class="modal-overlay" id="modal-delarchive">
+  <div class="modal">
+    <div class="modal-hdr red">⚠&nbsp;&nbsp;删除档案记录</div>
+    <div class="modal-body">
+      <div class="modal-info-box">
+        <p id="delarch-proj" style="font-weight:700"></p>
+        <p id="delarch-file"></p>
+        <p class="warn-txt">仅删除数据库记录，磁盘文件保留。</p>
+      </div>
+      <div class="modal-row">
+        <label>请输入管理员密码以确认删除：</label>
+        <input type="password" id="delarch-pwd" onkeydown="if(event.key==='Enter')confirmDelArchive()">
+      </div>
+      <div class="modal-err" id="delarch-err"></div>
+      <div class="modal-btns">
+        <button class="btn btn-muted" onclick="closeModal('modal-delarchive')">取&nbsp;&nbsp;消</button>
+        <button class="btn btn-red" onclick="confirmDelArchive()">确认删除</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- User dialog modal -->
+<div class="modal-overlay" id="modal-user">
+  <div class="modal">
+    <div class="modal-hdr navy" id="user-modal-title">新增用户</div>
+    <div class="modal-body">
+      <div class="modal-row">
+        <label>用户名 *</label>
+        <input type="text" id="u-name" autocomplete="off">
+      </div>
+      <div class="modal-row">
+        <label id="u-pwd-label">密码 *</label>
+        <input type="password" id="u-pwd" autocomplete="new-password">
+      </div>
+      <div class="modal-row">
+        <label>角色</label>
+        <div class="radio-group">
+          <label><input type="radio" name="u-role" value="user" checked> 普通用户</label>
+          <label><input type="radio" name="u-role" value="admin"> 管理员</label>
+        </div>
+      </div>
+      <div class="modal-row">
+        <label>账号状态</label>
+        <div class="radio-group">
+          <label><input type="radio" name="u-active" value="1" checked> 启用</label>
+          <label><input type="radio" name="u-active" value="0"> 禁用</label>
+        </div>
+      </div>
+      <div class="modal-err" id="user-modal-err"></div>
+      <div class="modal-btns">
+        <button class="btn btn-muted" onclick="closeModal('modal-user')">取&nbsp;&nbsp;消</button>
+        <button class="btn btn-navy" onclick="saveUser()">保&nbsp;&nbsp;存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ================================================================
+// DATA LAYER — IndexedDB wrapper
+// ================================================================
+const DB_NAME = 'ArchiveDB', DB_VER = 1;
+let db_conn = null;
+
+function openDB(){
+  return new Promise((res,rej)=>{
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e=>{
+      const db = e.target.result;
+      if(!db.objectStoreNames.contains('users'))
+        db.createObjectStore('users',{keyPath:'id',autoIncrement:true});
+      if(!db.objectStoreNames.contains('projects'))
+        db.createObjectStore('projects',{keyPath:'id',autoIncrement:true});
+      if(!db.objectStoreNames.contains('archives'))
+        db.createObjectStore('archives',{keyPath:'id',autoIncrement:true});
+      if(!db.objectStoreNames.contains('settings'))
+        db.createObjectStore('settings',{keyPath:'key'});
+      if(!db.objectStoreNames.contains('audit'))
+        db.createObjectStore('audit',{keyPath:'id',autoIncrement:true});
+    };
+    req.onsuccess = e=>{ db_conn = e.target.result; res(db_conn); };
+    req.onerror = e=>rej(e);
+  });
+}
+function txGet(store,key){
+  return new Promise((res,rej)=>{
+    const tx = db_conn.transaction(store,'readonly');
+    const req = tx.objectStore(store).get(key);
+    req.onsuccess=()=>res(req.result);
+    req.onerror=e=>rej(e);
+  });
+}
+function txGetAll(store){
+  return new Promise((res,rej)=>{
+    const tx = db_conn.transaction(store,'readonly');
+    const req = tx.objectStore(store).getAll();
+    req.onsuccess=()=>res(req.result);
+    req.onerror=e=>rej(e);
+  });
+}
+function txPut(store,obj){
+  return new Promise((res,rej)=>{
+    const tx = db_conn.transaction(store,'readwrite');
+    const req = tx.objectStore(store).put(obj);
+    req.onsuccess=()=>res(req.result);
+    req.onerror=e=>rej(e);
+  });
+}
+function txAdd(store,obj){
+  return new Promise((res,rej)=>{
+    const tx = db_conn.transaction(store,'readwrite');
+    const req = tx.objectStore(store).add(obj);
+    req.onsuccess=()=>res(req.result);
+    req.onerror=e=>rej(e);
+  });
+}
+function txDelete(store,key){
+  return new Promise((res,rej)=>{
+    const tx = db_conn.transaction(store,'readwrite');
+    const req = tx.objectStore(store).delete(key);
+    req.onsuccess=()=>res();
+    req.onerror=e=>rej(e);
+  });
+}
+// simple hash (not bcrypt, but sufficient for demo)
+async function hashPwd(pwd){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('salt_czq_'+pwd));
+  return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function checkPwd(pwd,hash){
+  return await hashPwd(pwd) === hash;
+}
+function nowStr(){
+  return new Date().toLocaleString('zh-CN',{hour12:false}).replace(/\//g,'-');
+}
+function dateStr(){
+  return new Date().toLocaleDateString('zh-CN',{hour12:false}).replace(/\//g,'-');
+}
+function fmtNum(n){ return n==null||n===''?'-':(+n).toLocaleString('zh-CN',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+
+// ================================================================
+// SEED DATA
+// ================================================================
+async function seedData(){
+  const users = await txGetAll('users');
+  if(users.length===0){
+    const h1 = await hashPwd('admin123');
+    const h2 = await hashPwd('user123');
+    await txAdd('users',{username:'admin',password_hash:h1,role:'admin',is_active:1,fail_count:0,locked_until:null,created_at:nowStr(),last_login:null});
+    await txAdd('users',{username:'user',password_hash:h2,role:'user',is_active:1,fail_count:0,locked_until:null,created_at:nowStr(),last_login:null});
+  }
+  const projects = await txGetAll('projects');
+  if(projects.length===0){
+    const seed=[
+      {project_no:'房建-2023-01-01号',project_name:'城投大厦建设项目',project_type:'房建',project_nature:'政府性',approve_year:'2023',approve_month:'01',manager:'张三',start_date:'2023-03-01',end_date:'',location:'城厢区',budget:8500,jianan_investment:6200,paid_amount:3100,status:'在建',description:'',created_at:nowStr()},
+      {project_no:'市政-2023-03-01号',project_name:'滨江路改造工程',project_type:'市政',project_nature:'政府性',approve_year:'2023',approve_month:'03',manager:'李四',start_date:'2023-05-01',end_date:'',location:'城厢区',budget:2300,jianan_investment:1800,paid_amount:900,status:'在建',description:'',created_at:nowStr()},
+      {project_no:'公路-2022-06-01号',project_name:'环城公路拓宽工程',project_type:'公路',project_nature:'政府性',approve_year:'2022',approve_month:'06',manager:'王五',start_date:'2022-09-01',end_date:'2023-12-31',location:'城厢区',budget:5600,jianan_investment:4200,paid_amount:4200,status:'竣（完）工',description:'',created_at:nowStr()},
+      {project_no:'房建-2024-02-01号',project_name:'安置房建设项目（二期）',project_type:'房建',project_nature:'政府性',approve_year:'2024',approve_month:'02',manager:'赵六',start_date:'',end_date:'',location:'城厢区',budget:12000,jianan_investment:9000,paid_amount:0,status:'前期',description:'',created_at:nowStr()},
+      {project_no:'水利水电-2023-08-01号',project_name:'木兰溪防洪治理工程',project_type:'水利水电',project_nature:'政府性',approve_year:'2023',approve_month:'08',manager:'陈七',start_date:'2023-10-01',end_date:'',location:'城厢区',budget:3200,jianan_investment:2500,paid_amount:1200,status:'在建',description:'',created_at:nowStr()},
+    ];
+    for(const p of seed){
+      const pid = await txAdd('projects',p);
+      const cats=['报批档案','工程档案','资金档案','招投标档案','合同档案','其他档案'];
+      // add some demo archives
+      if(p.project_no.includes('房建-2023')){
+        await txAdd('archives',{project_id:pid,category:'报批档案',file_name:'立项批复.pdf',original_name:'立项批复.pdf',description:'发改委立项批复文件',upload_date:'2023-01-15',uploaded_by:'admin',file_path:'/demo/'});
+        await txAdd('archives',{project_id:pid,category:'工程档案',file_name:'施工图设计.dwg',original_name:'施工图设计.dwg',description:'主楼施工图',upload_date:'2023-03-10',uploaded_by:'admin',file_path:'/demo/'});
+        await txAdd('archives',{project_id:pid,category:'合同档案',file_name:'施工合同.pdf',original_name:'施工合同.pdf',description:'总承包合同',upload_date:'2023-03-20',uploaded_by:'user',file_path:'/demo/'});
+      }
+      if(p.project_no.includes('市政')){
+        await txAdd('archives',{project_id:pid,category:'报批档案',file_name:'规划许可证.pdf',original_name:'规划许可证.pdf',description:'',upload_date:'2023-03-25',uploaded_by:'admin',file_path:'/demo/'});
+      }
+    }
+  }
+  const settings = await txGet('settings','root_dir');
+  if(!settings) await txPut('settings',{key:'root_dir',value:'D:\\档案文件'});
+}
+
+// ================================================================
+// APP STATE
+// ================================================================
+let currentUser = null;
+let selectedProjId = null;  // for detail page
+let selectedArchiveId = null; // for delete
+let editUserId = null;
+let deleteProjId = null;
+let deleteArchiveId = null;
+
+const PROJECT_TYPES = ['房建','市政','公路','水利水电','电力','机电','其他'];
+const PROJECT_STATUS = ['前期','在建','竣（完）工','暂停','取消'];
+const ARCHIVE_CATS = ['报批档案','工程档案','资金档案','招投标档案','合同档案','其他档案'];
+
+// ================================================================
+// BOOTSTRAP
+// ================================================================
+(async()=>{
+  await openDB();
+  await seedData();
+  // init create form dropdowns
+  initCreateFormDropdowns();
+  // init upload cats
+  const upCat = document.getElementById('up-cat');
+  ARCHIVE_CATS.forEach(c=>{ const o=document.createElement('option'); o.textContent=c; upCat.appendChild(o); });
+  // init search cats
+  const sCat = document.getElementById('s-cat');
+  ARCHIVE_CATS.forEach(c=>{ const o=document.createElement('option'); o.value=c; o.textContent=c; sCat.appendChild(o); });
+  // enter key on login
+  document.getElementById('inp-pwd').addEventListener('keydown',e=>{ if(e.key==='Enter') doLogin(); });
+})();
+
+function initCreateFormDropdowns(){
+  // type radios
+  const tg = document.getElementById('cp-type-group');
+  PROJECT_TYPES.forEach(t=>{
+    const l=document.createElement('label');
+    l.innerHTML=`<input type="radio" name="cp-type" value="${t}" onchange="updateProjNo()"> ${t}`;
+    tg.appendChild(l);
+  });
+  // years
+  const cy = new Date().getFullYear();
+  ['cp-year','cp-sy','cp-ey'].forEach(id=>{
+    const sel = document.getElementById(id);
+    if(id==='cp-year'){ const o=document.createElement('option'); o.value=''; o.textContent='年份'; sel.appendChild(o); }
+    else { const o=document.createElement('option'); o.value=''; o.textContent='年'; sel.appendChild(o); }
+    for(let y=2000;y<=cy+5;y++){ const o=document.createElement('option'); o.value=y; o.textContent=y; if(y===cy)o.selected=true; sel.appendChild(o); }
+  });
+  // months
+  ['cp-month','cp-sm','cp-em'].forEach(id=>{
+    const sel=document.getElementById(id);
+    for(let m=1;m<=12;m++){ const o=document.createElement('option'); o.value=String(m).padStart(2,'0'); o.textContent=String(m).padStart(2,'0'); sel.appendChild(o); }
+  });
+  // days
+  ['cp-sd','cp-ed'].forEach(id=>{
+    const sel=document.getElementById(id);
+    for(let d=1;d<=31;d++){ const o=document.createElement('option'); o.value=String(d).padStart(2,'0'); o.textContent=String(d).padStart(2,'0'); sel.appendChild(o); }
+  });
+  // set current month
+  const cm = String(new Date().getMonth()+1).padStart(2,'0');
+  document.getElementById('cp-month').value=cm;
+}
+
+// ================================================================
+// LOGIN
+// ================================================================
+async function doLogin(){
+  const username = document.getElementById('inp-user').value.trim();
+  const password = document.getElementById('inp-pwd').value;
+  const errEl = document.getElementById('login-err');
+  errEl.textContent='';
+  if(!username||!password){ errEl.textContent='⚠  请输入用户名和密码'; return; }
+
+  const users = await txGetAll('users');
+  const u = users.find(x=>x.username===username);
+  if(!u){ errEl.textContent='⚠  用户名或密码错误'; return; }
+  if(!u.is_active){ errEl.textContent='⚠  账号已被禁用，请联系管理员'; return; }
+  if(u.locked_until){
+    const lockDt = new Date(u.locked_until);
+    if(new Date()<lockDt){
+      const remain = Math.ceil((lockDt-new Date())/60000);
+      errEl.textContent=`⚠  账号已锁定，请 ${remain} 分钟后重试`;
+      return;
+    } else { u.fail_count=0; u.locked_until=null; await txPut('users',u); }
+  }
+  const ok = await checkPwd(password, u.password_hash);
+  if(!ok){
+    u.fail_count=(u.fail_count||0)+1;
+    if(u.fail_count>=5){
+      const lockUntil = new Date(Date.now()+15*60000).toLocaleString('zh-CN',{hour12:false}).replace(/\//g,'-');
+      u.locked_until=lockUntil;
+      await txPut('users',u);
+      errEl.textContent='⚠  密码错误次数过多，账号已锁定 15 分钟';
+    } else {
+      await txPut('users',u);
+      errEl.textContent=`⚠  密码错误，还可尝试 ${5-u.fail_count} 次`;
+    }
+    document.getElementById('inp-pwd').value='';
+    return;
+  }
+  u.fail_count=0; u.locked_until=null; u.last_login=nowStr();
+  await txPut('users',u);
+  await addAuditLog(username,'登录系统','登录成功');
+  currentUser = u;
+  showApp();
+}
+
+function showApp(){
+  document.getElementById('login-screen').style.display='none';
+  const app = document.getElementById('app-screen');
+  app.classList.add('visible');
+  document.getElementById('tb-username').textContent=currentUser.username;
+  const roleEl = document.getElementById('tb-role');
+  if(currentUser.role==='admin'){
+    roleEl.textContent=' 管理员 '; roleEl.className='topbar-role role-admin';
+    document.getElementById('admin-sep').style.display='';
+    ['nav-usermgmt','nav-settings','nav-auditlog'].forEach(id=>document.getElementById(id).style.display='');
+    document.getElementById('btn-del-proj').style.display='';
+    document.getElementById('btn-del-archive').style.display='';
+  } else {
+    roleEl.textContent=' 普通用户 '; roleEl.className='topbar-role role-user';
+  }
+  navTo('dashboard');
+}
+
+async function doLogout(){
+  if(!confirm('确定退出当前账号？')) return;
+  await addAuditLog(currentUser.username,'退出登录','');
+  currentUser=null;
+  document.getElementById('app-screen').classList.remove('visible');
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('inp-user').value='';
+  document.getElementById('inp-pwd').value='';
+  document.getElementById('login-err').textContent='';
+}
+
+// ================================================================
+// NAVIGATION
+// ================================================================
+function navTo(page){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+  const pageEl = document.getElementById('page-'+page);
+  if(pageEl) pageEl.classList.add('active');
+  const navEl = document.querySelector(`.nav-item[data-page="${page}"]`);
+  if(navEl) navEl.classList.add('active');
+  // lazy render
+  if(page==='dashboard') renderDashboard();
+  if(page==='stats') reloadStats();
+  if(page==='projlist') reloadProjList();
+  if(page==='upload') renderUploadTree();
+  if(page==='search') doSearch();
+  if(page==='usermgmt') reloadUsers();
+  if(page==='auditlog') reloadAuditLog();
+  if(page==='settings') loadSettings();
+}
+
+// ================================================================
+// DASHBOARD
+// ================================================================
+async function renderDashboard(){
+  const projects = await txGetAll('projects');
+  const archives = await txGetAll('archives');
+  const total=projects.length;
+  const pre=projects.filter(p=>p.status==='前期').length;
+  const active=projects.filter(p=>p.status==='在建').length;
+  const done=projects.filter(p=>p.status==='竣（完）工').length;
+  const narch=archives.length;
+  const stats=[
+    {lbl:'全部项目',val:total,color:'var(--navy)',icon:'🏗'},
+    {lbl:'前期项目',val:pre,color:'var(--blue)',icon:'📐'},
+    {lbl:'在建项目',val:active,color:'var(--green)',icon:'🔨'},
+    {lbl:'竣（完）工项目',val:done,color:'var(--purple)',icon:'✅'},
+    {lbl:'档案总数',val:narch,color:'var(--warn)',icon:'📄'},
+  ];
+  const row=document.getElementById('stat-row');
+  row.innerHTML='';
+  stats.forEach(s=>{
+    row.innerHTML+=`<div class="stat-card">
+      <div class="stat-icon">${s.icon}</div>
+      <div class="stat-val" style="color:${s.color}">${s.val}</div>
+      <div class="stat-lbl">${s.lbl}</div>
+      <div class="stat-bar" style="background:${s.color}"></div>
+    </div>`;
+  });
+  // recent projects
+  const archMap={};
+  archives.forEach(a=>{ archMap[a.project_id]=(archMap[a.project_id]||0)+1; });
+  const recent = [...projects].sort((a,b)=>b.id-a.id).slice(0,10);
+  const tbody=document.getElementById('dash-tbody');
+  tbody.innerHTML='';
+  recent.forEach((p,i)=>{
+    const tr=document.createElement('tr');
+    tr.className=i%2===0?'even data-row':'odd data-row';
+    tr.innerHTML=`<td>${p.project_no}</td><td style="text-align:left">${p.project_name}</td><td>${p.manager||'-'}</td><td>${p.status}</td><td>${archMap[p.id]||0}</td>`;
+    tr.ondblclick=()=>showProjDetail(p.id);
+    tbody.appendChild(tr);
+  });
+}
+
+// ================================================================
+// PROJECT STATS
+// ================================================================
+async function reloadStats(){
+  const dim = document.querySelector('input[name="stats-dim"]:checked')?.value||'type';
+  const projects = await txGetAll('projects');
+  const groups={};
+  projects.forEach(p=>{
+    let key;
+    if(dim==='type') key=p.project_type||'未分类';
+    else if(dim==='status') key=p.status||'未分类';
+    else key=p.project_nature||'未分类';
+    if(!groups[key]) groups[key]={cnt:0,budget:0,jianan:0,paid:0};
+    groups[key].cnt++;
+    groups[key].budget+=(+p.budget||0);
+    groups[key].jianan+=(+p.jianan_investment||0);
+    groups[key].paid+=(+p.paid_amount||0);
+  });
+  const sorted=Object.entries(groups).sort((a,b)=>b[1].budget-a[1].budget);
+  const tbody=document.getElementById('stats-tbody');
+  tbody.innerHTML='';
+  sorted.forEach(([k,v],i)=>{
+    const tr=document.createElement('tr');
+    tr.className=i%2===0?'even':'odd';
+    tr.innerHTML=`<td>${k}</td><td>${v.cnt}</td><td>${fmtNum(v.budget)}</td><td>${fmtNum(v.jianan)}</td><td>${fmtNum(v.paid)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ================================================================
+// PROJECT LIST
+// ================================================================
+async function reloadProjList(){
+  const kw=(document.getElementById('proj-search')?.value||'').trim();
+  const statusFilter=document.getElementById('proj-status-filter')?.value||'';
+  const projects = await txGetAll('projects');
+  const archives = await txGetAll('archives');
+  const archMap={};
+  archives.forEach(a=>{ archMap[a.project_id]=(archMap[a.project_id]||0)+1; });
+
+  let filtered=projects.filter(p=>{
+    if(statusFilter && p.status!==statusFilter) return false;
+    if(kw && !p.project_no.includes(kw) && !p.project_name.includes(kw) && !(p.manager||'').includes(kw)) return false;
+    return true;
+  });
+  filtered.sort((a,b)=>b.project_no.localeCompare(a.project_no));
+
+  const groups={};
+  filtered.forEach(p=>{ const t=p.project_type||'其他'; (groups[t]=groups[t]||[]).push(p); });
+
+  const tbody=document.getElementById('proj-tbody');
+  tbody.innerHTML='';
+  PROJECT_TYPES.forEach(pt=>{
+    if(!groups[pt]) return;
+    const rows=groups[pt];
+    const gtr=document.createElement('tr');
+    gtr.className='group-row';
+    gtr.innerHTML=`<td colspan="6" style="padding-left:14px">　${pt}&nbsp;&nbsp;(${rows.length})</td>`;
+    tbody.appendChild(gtr);
+    rows.forEach((p,i)=>{
+      const tr=document.createElement('tr');
+      tr.className=i%2===0?'even data-row':'odd data-row';
+      tr.dataset.id=p.id;
+      tr.innerHTML=`<td></td><td>${p.project_no}</td><td style="text-align:left">${p.project_name}</td><td>${p.manager||'-'}</td><td>${p.status}</td><td>${archMap[p.id]||0}</td>`;
+      tr.ondblclick=()=>showProjDetail(p.id);
+      tr.onclick=()=>{ document.querySelectorAll('#proj-tbody tr').forEach(r=>r.classList.remove('selected')); tr.classList.add('selected'); };
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function getSelectedProjIdFromList(){
+  const sel=document.querySelector('#proj-tbody tr.selected');
+  if(!sel||!sel.dataset.id){ alert('请先在列表中选中一个项目。'); return null; }
+  if(!sel.dataset.id){ alert('请选中具体项目，而非类型分组。'); return null; }
+  return +sel.dataset.id;
+}
+
+// ================================================================
+// PROJECT DETAIL
+// ================================================================
+async function showProjDetail(pid){
+  selectedProjId=pid;
+  const projects=await txGetAll('projects');
+  const proj=projects.find(p=>p.id===pid);
+  if(!proj) return;
+  navTo('projdetail');
+  document.querySelector('.nav-item.active')?.classList.remove('active');
+
+  document.getElementById('detail-title').textContent=`📂  ${proj.project_name}  ·  档案详情`;
+  document.getElementById('detail-upload-btn').onclick=()=>{ navTo('upload'); setTimeout(()=>preselectUploadProj(pid),100); };
+
+  const fields=[
+    ['项目编号',proj.project_no],['负 责 人',proj.manager||'-'],['项目状态',proj.status],
+    ['开工日期',proj.start_date||'-'],['竣工日期',proj.end_date||'-'],
+    ['项目总投资',proj.budget?fmtNum(proj.budget)+' 万元':'-'],
+    ['建安投资',proj.jianan_investment?fmtNum(proj.jianan_investment)+' 万元':'-'],
+    ['已支付工程款',proj.paid_amount?fmtNum(proj.paid_amount)+' 万元':'-'],
+  ];
+  const grid=document.getElementById('detail-info-grid');
+  grid.innerHTML='';
+  fields.forEach(([k,v])=>{
+    grid.innerHTML+=`<div class="info-field"><span class="info-key">${k}：</span><span class="info-val">${v}</span></div>`;
+  });
+
+  const archives=await txGetAll('archives');
+  const tabsEl=document.getElementById('detail-tabs');
+  const panelsEl=document.getElementById('detail-panels');
+  tabsEl.innerHTML=''; panelsEl.innerHTML='';
+
+  ARCHIVE_CATS.forEach((cat,idx)=>{
+    const rows=archives.filter(a=>a.project_id===pid && a.category===cat);
+    const tabEl=document.createElement('div');
+    tabEl.className='nb-tab'+(idx===0?' active':'');
+    tabEl.textContent=`  ${cat} (${rows.length})  `;
+    tabEl.onclick=()=>{
+      document.querySelectorAll('.nb-tab').forEach(t=>t.classList.remove('active'));
+      document.querySelectorAll('.nb-panel').forEach(p=>p.classList.remove('active'));
+      tabEl.classList.add('active');
+      document.getElementById('panel-'+idx).classList.add('active');
+    };
+    tabsEl.appendChild(tabEl);
+
+    const panel=document.createElement('div');
+    panel.className='nb-panel'+(idx===0?' active':'');
+    panel.id='panel-'+idx;
+    let html=`<div class="scrollable-table" style="max-height:360px"><table class="tree-table"><thead><tr><th style="text-align:left">原始文件名</th><th>上传日期</th><th>上传人</th><th>说明</th></tr></thead><tbody>`;
+    rows.forEach((r,i)=>{
+      html+=`<tr class="${i%2===0?'even':'odd'} data-row" data-aid="${r.id}" ondblclick="alertOpenFile('${r.original_name||r.file_name}')">
+        <td style="text-align:left">${r.original_name||r.file_name}</td>
+        <td>${r.upload_date||'-'}</td><td>${r.uploaded_by||'-'}</td><td>${r.description||'-'}</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+    panel.innerHTML=html;
+    panelsEl.appendChild(panel);
+  });
+}
+
+function alertOpenFile(name){
+  alert(`演示模式：文件「${name}」\n\n在实际部署版本中，此处会直接打开或下载该文件。`);
+}
+
+// ================================================================
+// CREATE PROJECT
+// ================================================================
+async function updateProjNo(){
+  const type=document.querySelector('input[name="cp-type"]:checked')?.value;
+  const year=document.getElementById('cp-year').value;
+  const month=document.getElementById('cp-month').value;
+  const noEl=document.getElementById('cp-no');
+  if(!type||!year||!month){ noEl.value=''; return; }
+  const prefix=`${type}-${year}-${month}`;
+  const projects=await txGetAll('projects');
+  let maxSeq=0;
+  projects.forEach(p=>{
+    if(p.project_no.startsWith(prefix)){
+      const rest=p.project_no.replace(prefix+'-','').replace('号','');
+      const n=parseInt(rest);
+      if(!isNaN(n)&&n>maxSeq) maxSeq=n;
+    }
+  });
+  noEl.value=`${prefix}-${String(maxSeq+1).padStart(2,'0')}号`;
+}
+
+async function saveProject(){
+  const type=document.querySelector('input[name="cp-type"]:checked')?.value;
+  const year=document.getElementById('cp-year').value;
+  const month=document.getElementById('cp-month').value;
+  const status=document.querySelector('input[name="cp-status"]:checked')?.value;
+  const nature=document.querySelector('input[name="cp-nature"]:checked')?.value;
+  const no=document.getElementById('cp-no').value;
+  const name=document.getElementById('cp-name').value.trim();
+  const manager=document.getElementById('cp-manager').value.trim();
+  if(!type){ alert('第一步：请选择项目类型！'); return; }
+  if(!year||!month){ alert('第二步：请选择立项年月！'); return; }
+  if(!status){ alert('第三步：请选择项目状态！'); return; }
+  if(!nature){ alert('第四步：请选择项目性质！'); return; }
+  if(!no){ alert('第五步：档案编号生成失败，请检查前三步！'); return; }
+  if(!name){ alert('第六步：请输入项目名称！'); return; }
+  const sy=document.getElementById('cp-sy').value, sm=document.getElementById('cp-sm').value, sd=document.getElementById('cp-sd').value;
+  const ey=document.getElementById('cp-ey').value, em=document.getElementById('cp-em').value, ed=document.getElementById('cp-ed').value;
+  const start_date=sy&&sm&&sd?`${sy}-${sm}-${sd}`:'';
+  const end_date=ey&&em&&ed?`${ey}-${em}-${ed}`:'';
+  const budgetS=document.getElementById('cp-budget').value;
+  const jiananS=document.getElementById('cp-jianan').value;
+  const paidS=document.getElementById('cp-paid').value;
+  const budget=budgetS?+budgetS:null;
+  const jianan=jiananS?+jiananS:null;
+  const paid=paidS?+paidS:null;
+  if(budgetS&&isNaN(budget)){ alert('项目总投资请填写数字！'); return; }
+  const desc=document.getElementById('cp-desc').value.trim();
+
+  const projects=await txGetAll('projects');
+  if(projects.find(p=>p.project_no===no)){ alert(`档案编号【${no}】已存在，请检查是否重复创建！`); return; }
+
+  await txAdd('projects',{project_no:no,project_name:name,project_type:type,project_nature:nature,approve_year:year,approve_month:month,manager,start_date,end_date,budget,jianan_investment:jianan,paid_amount:paid,status,description:desc,created_at:nowStr()});
+  await addAuditLog(currentUser.username,'创建项目',`项目编号：${no}，项目名称：${name}`);
+  alert(`项目创建成功！\n档案编号：${no}\n项目名称：${name}`);
+  resetCreateForm();
+  navTo('projlist');
+}
+
+function resetCreateForm(){
+  document.querySelectorAll('input[name="cp-type"]').forEach(r=>r.checked=false);
+  document.querySelectorAll('input[name="cp-status"]').forEach(r=>r.checked=false);
+  document.querySelectorAll('input[name="cp-nature"]').forEach(r=>r.checked=false);
+  ['cp-no','cp-name','cp-manager','cp-budget','cp-jianan','cp-paid'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cp-desc').value='';
+  ['cp-sy','cp-sm','cp-sd','cp-ey','cp-em','cp-ed'].forEach(id=>document.getElementById(id).value='');
+}
+
+// ================================================================
+// DELETE PROJECT
+// ================================================================
+async function deleteProjectUI(){
+  const pid=getSelectedProjIdFromList();
+  if(!pid) return;
+  const projects=await txGetAll('projects');
+  const proj=projects.find(p=>p.id===pid);
+  if(!proj) return;
+  const archives=await txGetAll('archives');
+  const cnt=archives.filter(a=>a.project_id===pid).length;
+  deleteProjId=pid;
+  document.getElementById('delproj-no').textContent=`项目编号：${proj.project_no}`;
+  document.getElementById('delproj-name').textContent=`项目名称：${proj.project_name}`;
+  document.getElementById('delproj-warn').textContent=`该项目下共有 ${cnt} 条档案记录将一并删除（磁盘文件保留）。`;
+  document.getElementById('delproj-pwd').value='';
+  document.getElementById('delproj-err').textContent='';
+  openModal('modal-delproj');
+}
+
+async function confirmDelProj(){
+  const pwd=document.getElementById('delproj-pwd').value;
+  if(!pwd){ document.getElementById('delproj-err').textContent='请输入密码'; return; }
+  const ok=await checkPwd(pwd,currentUser.password_hash);
+  if(!ok){ document.getElementById('delproj-err').textContent='密码错误，请重新输入'; document.getElementById('delproj-pwd').value=''; return; }
+  const projects=await txGetAll('projects');
+  const proj=projects.find(p=>p.id===deleteProjId);
+  const archives=await txGetAll('archives');
+  const toDelete=archives.filter(a=>a.project_id===deleteProjId);
+  for(const a of toDelete) await txDelete('archives',a.id);
+  await txDelete('projects',deleteProjId);
+  await addAuditLog(currentUser.username,'删除项目',`项目编号：${proj?.project_no}，项目名称：${proj?.project_name}`);
+  closeModal('modal-delproj');
+  alert(`项目【${proj?.project_name}】已删除。\n档案记录已清除，磁盘文件请手动清理。`);
+  reloadProjList();
+}
+
+// ================================================================
+// UPLOAD
+// ================================================================
+let upSelectedPid=0;
+let upSelectedFile=null;
+
+async function renderUploadTree(){
+  upSelectedPid=0;
+  document.getElementById('up-sel-label').textContent='（未选择）';
+  filterUploadTree();
+}
+
+async function filterUploadTree(){
+  const kw=(document.getElementById('up-search')?.value||'').trim();
+  const projects=await txGetAll('projects');
+  let filtered=projects;
+  if(kw) filtered=projects.filter(p=>p.project_no.includes(kw)||p.project_name.includes(kw));
+  filtered.sort((a,b)=>b.project_no.localeCompare(a.project_no));
+  const groups={};
+  filtered.forEach(p=>{ const t=p.project_type||'其他'; (groups[t]=groups[t]||[]).push(p); });
+  const tbody=document.getElementById('up-proj-tbody');
+  tbody.innerHTML='';
+  PROJECT_TYPES.forEach(pt=>{
+    if(!groups[pt]) return;
+    const gtr=document.createElement('tr');
+    gtr.className='group-row';
+    gtr.innerHTML=`<td colspan="3" style="padding-left:8px">${pt}</td>`;
+    tbody.appendChild(gtr);
+    groups[pt].forEach((p,i)=>{
+      const tr=document.createElement('tr');
+      tr.className=i%2===0?'even data-row':'odd data-row';
+      tr.innerHTML=`<td></td><td style="text-align:left">${p.project_no}</td><td style="text-align:left">${p.project_name}</td>`;
+      tr.onclick=()=>{
+        document.querySelectorAll('#up-proj-tbody tr').forEach(r=>r.classList.remove('selected'));
+        tr.classList.add('selected');
+        upSelectedPid=p.id;
+        document.getElementById('up-sel-label').textContent=`${p.project_no} - ${p.project_name}`;
+      };
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function preselectUploadProj(pid){
+  const rows=document.querySelectorAll('#up-proj-tbody tr.data-row');
+  rows.forEach(tr=>{
+    // find by clicking the correct one
+  });
+  upSelectedPid=pid;
+  // find project
+  txGetAll('projects').then(projects=>{
+    const p=projects.find(x=>x.id===pid);
+    if(p) document.getElementById('up-sel-label').textContent=`${p.project_no} - ${p.project_name}`;
+  });
+}
+
+function onFileSelected(){
+  const inp=document.getElementById('up-file-input');
+  if(inp.files.length>0){
+    upSelectedFile=inp.files[0];
+    document.getElementById('up-file-name').value=inp.files[0].name;
+  }
+}
+
+async function doUpload(){
+  if(!upSelectedPid){ alert('请在左侧列表中选择项目！'); return; }
+  const fname=document.getElementById('up-file-name').value;
+  if(!fname){ alert('请选择要上传的文件！'); return; }
+  const cat=document.getElementById('up-cat').value;
+  const desc=document.getElementById('up-desc').value.trim();
+  const projects=await txGetAll('projects');
+  const proj=projects.find(p=>p.id===upSelectedPid);
+  if(!proj){ alert('项目不存在！'); return; }
+  await txAdd('archives',{
+    project_id:upSelectedPid,category:cat,file_name:fname,
+    original_name:fname,description:desc,
+    upload_date:dateStr(),uploaded_by:currentUser.username,file_path:'/demo/'
+  });
+  await addAuditLog(currentUser.username,'上传档案',`项目：${proj.project_no}，类别：${cat}，文件：${fname}`);
+  alert(`文件已归档！\n项目：${proj.project_name}\n类别：${cat}\n文件：${fname}`);
+  document.getElementById('up-file-name').value='';
+  document.getElementById('up-file-input').value='';
+  document.getElementById('up-desc').value='';
+  upSelectedFile=null;
+}
+
+// ================================================================
+// SEARCH
+// ================================================================
+async function doSearch(){
+  const kw=(document.getElementById('s-kw')?.value||'').trim();
+  const cat=document.getElementById('s-cat')?.value||'';
+  const archives=await txGetAll('archives');
+  const projects=await txGetAll('projects');
+  const projMap={};
+  projects.forEach(p=>projMap[p.id]=p);
+  let results=archives.filter(a=>{
+    if(cat && a.category!==cat) return false;
+    if(kw){
+      const proj=projMap[a.project_id];
+      if(!a.file_name?.includes(kw)&&!a.original_name?.includes(kw)&&!proj?.project_name?.includes(kw)&&!(a.description||'').includes(kw)) return false;
+    }
+    return true;
+  });
+  results.sort((a,b)=>(b.upload_date||'').localeCompare(a.upload_date||''));
+  const tbody=document.getElementById('search-tbody');
+  tbody.innerHTML='';
+  results.forEach((r,i)=>{
+    const proj=projMap[r.project_id]||{};
+    const tr=document.createElement('tr');
+    tr.className=i%2===0?'even data-row':'odd data-row';
+    tr.dataset.id=r.id;
+    tr.innerHTML=`<td>${proj.project_no||'-'}</td><td style="text-align:left">${proj.project_name||'-'}</td><td>${r.category}</td><td style="text-align:left">${r.original_name||'-'}</td><td>${r.upload_date||'-'}</td><td>${r.uploaded_by||'-'}</td><td style="text-align:left">${r.description||'-'}</td>`;
+    tr.ondblclick=()=>alertOpenFile(r.original_name||r.file_name);
+    tr.onclick=()=>{ document.querySelectorAll('#search-tbody tr').forEach(x=>x.classList.remove('selected')); tr.classList.add('selected'); };
+    tbody.appendChild(tr);
+  });
+}
+
+async function deleteArchiveUI(){
+  const sel=document.querySelector('#search-tbody tr.selected');
+  if(!sel){ alert('请先在搜索结果中选中一条档案记录。'); return; }
+  const aid=+sel.dataset.id;
+  const archives=await txGetAll('archives');
+  const arc=archives.find(a=>a.id===aid);
+  if(!arc){ alert('档案记录不存在或已被删除。'); doSearch(); return; }
+  const projects=await txGetAll('projects');
+  const proj=projects.find(p=>p.id===arc.project_id)||{};
+  deleteArchiveId=aid;
+  document.getElementById('delarch-proj').textContent=`项目：${proj.project_no||''} - ${proj.project_name||''}`;
+  document.getElementById('delarch-file').textContent=`档案：${arc.original_name||arc.file_name}（${arc.category}）`;
+  document.getElementById('delarch-pwd').value='';
+  document.getElementById('delarch-err').textContent='';
+  openModal('modal-delarchive');
+}
+
+async function confirmDelArchive(){
+  const pwd=document.getElementById('delarch-pwd').value;
+  if(!pwd){ document.getElementById('delarch-err').textContent='请输入密码'; return; }
+  const ok=await checkPwd(pwd,currentUser.password_hash);
+  if(!ok){ document.getElementById('delarch-err').textContent='密码错误，请重新输入'; document.getElementById('delarch-pwd').value=''; return; }
+  await txDelete('archives',deleteArchiveId);
+  await addAuditLog(currentUser.username,'删除档案','');
+  closeModal('modal-delarchive');
+  alert('该档案记录已删除。（磁盘文件未删除）');
+  doSearch();
+}
+
+// ================================================================
+// CHANGE PASSWORD
+// ================================================================
+async function doChangePwd(){
+  const old=document.getElementById('pwd-old').value;
+  const nw=document.getElementById('pwd-new').value;
+  const cfm=document.getElementById('pwd-cfm').value;
+  if(!old||!nw||!cfm){ alert('请填写所有字段！'); return; }
+  if(nw!==cfm){ alert('两次新密码不一致！'); return; }
+  if(nw.length<6){ alert('新密码至少 6 位！'); return; }
+  const ok=await checkPwd(old,currentUser.password_hash);
+  if(!ok){ alert('当前密码错误！'); return; }
+  const newHash=await hashPwd(nw);
+  currentUser.password_hash=newHash;
+  await txPut('users',currentUser);
+  await addAuditLog(currentUser.username,'修改密码','密码已更新');
+  alert('密码修改成功，请重新登录。');
+  doLogout();
+}
+
+// ================================================================
+// USER MANAGEMENT
+// ================================================================
+async function reloadUsers(){
+  const users=await txGetAll('users');
+  const tbody=document.getElementById('users-tbody');
+  tbody.innerHTML='';
+  users.forEach((u,i)=>{
+    const tr=document.createElement('tr');
+    tr.className=i%2===0?'even':'odd';
+    const status=u.is_active?'✅ 启用':'🚫 禁用';
+    const locked=u.locked_until&&new Date(u.locked_until)>new Date()?`⚠ ${u.locked_until}`:'-';
+    tr.innerHTML=`<td>${u.id}</td><td>${u.username}</td><td>${u.role==='admin'?'管理员':'普通用户'}</td><td>${status}</td><td>${u.fail_count||0}</td><td>${locked}</td><td>${u.last_login||'从未登录'}</td><td>${u.created_at||'-'}</td>
+    <td style="white-space:nowrap">
+      <button class="btn btn-navy2 btn-sm" style="margin:1px" onclick="openUserDialog(${u.id})">编辑</button>
+      <button class="btn btn-navy2 btn-sm" style="margin:1px" onclick="unlockUser(${u.id})">解锁</button>
+      <button class="btn btn-red btn-sm" style="margin:1px" onclick="delUser(${u.id})">删除</button>
+    </td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+async function openUserDialog(uid=null){
+  editUserId=uid;
+  document.getElementById('user-modal-title').textContent=uid?'编辑用户':'新增用户';
+  document.getElementById('u-pwd-label').textContent=uid?'密码（留空不改）':'密码 *';
+  document.getElementById('u-name').value='';
+  document.getElementById('u-pwd').value='';
+  document.querySelector('input[name="u-role"][value="user"]').checked=true;
+  document.querySelector('input[name="u-active"][value="1"]').checked=true;
+  document.getElementById('user-modal-err').textContent='';
+  if(uid){
+    const u=await txGet('users',uid);
+    if(u){
+      document.getElementById('u-name').value=u.username;
+      document.getElementById('u-name').readOnly=true;
+      document.querySelector(`input[name="u-role"][value="${u.role}"]`).checked=true;
+      document.querySelector(`input[name="u-active"][value="${u.is_active}"]`).checked=true;
+    }
+  } else {
+    document.getElementById('u-name').readOnly=false;
+  }
+  openModal('modal-user');
+}
+
+async function saveUser(){
+  const uname=document.getElementById('u-name').value.trim();
+  const pwd=document.getElementById('u-pwd').value;
+  const role=document.querySelector('input[name="u-role"]:checked').value;
+  const active=+document.querySelector('input[name="u-active"]:checked').value;
+  const errEl=document.getElementById('user-modal-err');
+  if(!uname){ errEl.textContent='用户名不能为空！'; return; }
+  if(!editUserId&&!pwd){ errEl.textContent='新增用户必须设置密码！'; return; }
+  if(pwd&&pwd.length<6){ errEl.textContent='密码至少 6 位！'; return; }
+  if(editUserId){
+    const u=await txGet('users',editUserId);
+    u.role=role; u.is_active=active; u.fail_count=0; u.locked_until=null;
+    if(pwd) u.password_hash=await hashPwd(pwd);
+    await txPut('users',u);
+    await addAuditLog(currentUser.username,'编辑用户',`用户：${uname}`);
+    alert('用户信息已更新。');
+  } else {
+    const users=await txGetAll('users');
+    if(users.find(u=>u.username===uname)){ errEl.textContent='用户名已存在！'; return; }
+    const h=await hashPwd(pwd);
+    await txAdd('users',{username:uname,password_hash:h,role,is_active:active,fail_count:0,locked_until:null,created_at:nowStr(),last_login:null});
+    await addAuditLog(currentUser.username,'新增用户',`用户：${uname}`);
+    alert(`用户【${uname}】创建成功。`);
+  }
+  closeModal('modal-user');
+  reloadUsers();
+}
+
+async function unlockUser(uid){
+  const u=await txGet('users',uid);
+  if(!u) return;
+  u.fail_count=0; u.locked_until=null;
+  await txPut('users',u);
+  await addAuditLog(currentUser.username,'解除锁定',`用户：${u.username}`);
+  alert('账号已解除锁定。');
+  reloadUsers();
+}
+
+async function delUser(uid){
+  if(uid===currentUser.id){ alert('不能删除自己的账号！'); return; }
+  const u=await txGet('users',uid);
+  if(!confirm(`确定删除用户【${u?.username}】？\n此操作不可撤销。`)) return;
+  await txDelete('users',uid);
+  await addAuditLog(currentUser.username,'删除用户',`用户：${u?.username}`);
+  alert('用户已删除。');
+  reloadUsers();
+}
+
+// ================================================================
+// SETTINGS
+// ================================================================
+async function loadSettings(){
+  const s=await txGet('settings','root_dir');
+  document.getElementById('setting-root').value=s?.value||'';
+}
+async function saveSettings(){
+  const val=document.getElementById('setting-root').value;
+  await txPut('settings',{key:'root_dir',value:val});
+  await addAuditLog(currentUser.username,'修改系统设置',`存储根目录：${val}`);
+  alert('设置已保存！');
+}
+
+// ================================================================
+// AUDIT LOG
+// ================================================================
+async function addAuditLog(username,action,detail){
+  await txAdd('audit',{username,action,detail,timestamp:nowStr()});
+}
+async function reloadAuditLog(){
+  const kw=(document.getElementById('log-kw')?.value||'').trim();
+  const logs=await txGetAll('audit');
+  let filtered=logs.filter(l=>{
+    if(!kw) return true;
+    return (l.username||'').includes(kw)||(l.action||'').includes(kw)||(l.detail||'').includes(kw);
+  });
+  filtered.sort((a,b)=>b.id-a.id);
+  filtered=filtered.slice(0,500);
+  const tbody=document.getElementById('log-tbody');
+  tbody.innerHTML='';
+  filtered.forEach((r,i)=>{
+    const tr=document.createElement('tr');
+    tr.className=i%2===0?'even':'odd';
+    tr.innerHTML=`<td>${r.timestamp||'-'}</td><td>${r.username||'-'}</td><td>${r.action||'-'}</td><td style="text-align:left">${r.detail||'-'}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+// ================================================================
+// MODAL HELPERS
+// ================================================================
+function openModal(id){ document.getElementById(id).classList.add('open'); }
+function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+// close on overlay click
+document.querySelectorAll('.modal-overlay').forEach(el=>{
+  el.addEventListener('click',e=>{ if(e.target===el) el.classList.remove('open'); });
+});
+</script>
+</body>
+</html>
