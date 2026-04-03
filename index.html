@@ -368,8 +368,9 @@
     <div class="connect">
       <div class="section-label">Connect</div>
       <div class="link-grid">
-        <a class="link-btn" href="https://ztq.uk/calculator.html" target="_blank">
-          <span class="bracket">[</span><span class="zh">片区测算工具</span><span class="bracket">]</span>
+        <!-- 修改内容：片区测算工具 -> 片区经济测算 -->
+        <a class="link-btn" href="https://ztq.uk/calculator.html" target="_blank" aria-label="片区经济测算">
+          <span class="bracket">[</span><span class="zh">片区经济测算</span><span class="bracket">]</span>
           <span class="arrow">→</span>
         </a>
         <a class="link-btn" href="https://ztq.uk/archive.html" target="_blank">
@@ -451,7 +452,6 @@
         el.style.transition = 'opacity 0.2s ease';
         el.style.opacity = '1';
 
-        // start typewriter after cursor line appears
         if (line.type === 'cursor') {
           const tw = el.querySelector('.typewriter');
           startTypewriter(tw);
