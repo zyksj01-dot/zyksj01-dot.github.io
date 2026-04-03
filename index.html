@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ztq made</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -14,9 +14,10 @@
       --surface:  #161b22;
       --surface2: #1c2128;
       --border:   #30363d;
+      --border-bright: #3d444d;
       --green:    #3fb950;
       --blue:     #58a6ff;
-      --purple:   #bc8cff;
+      --purple:   #c292ff;
       --muted:    #6e7681;
       --text:     #c9d1d9;
       --bright:   #f0f6fc;
@@ -33,14 +34,54 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
     }
 
+    /* ─── DOT MATRIX BACKGROUND ─── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: radial-gradient(circle, #30363d 1px, transparent 1px);
+      background-size: 28px 28px;
+      opacity: 0.28;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Vignette over dot matrix */
+    body::after {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, var(--bg) 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    nav, main, footer { position: relative; z-index: 1; }
+
+    /* ─── NAV ─── */
     nav {
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 1.2rem 3rem;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid transparent;
+      background: linear-gradient(to bottom, var(--bg), transparent);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    nav::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-bright) 20%, var(--blue) 50%, var(--border-bright) 80%, transparent);
+      opacity: 0.45;
     }
 
     .nav-left {
@@ -49,6 +90,12 @@
       letter-spacing: 0.05em;
     }
     .nav-left span { color: var(--blue); }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
 
     .nav-badge {
       font-size: 0.72rem;
@@ -60,9 +107,35 @@
       display: flex;
       align-items: center;
       gap: 0.4rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
     }
     .nav-badge::before { content: '>'; }
+    .nav-badge:hover {
+      border-color: var(--green);
+      box-shadow: 0 0 8px rgba(63,185,80,0.15);
+    }
 
+    /* Status indicator */
+    .nav-status {
+      font-size: 0.68rem;
+      color: var(--muted);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 0.3rem 0.75rem;
+      border-radius: 4px;
+    }
+    .nav-status-dot {
+      width: 5px; height: 5px;
+      border-radius: 50%;
+      background: var(--blue);
+      animation: pulse 2.4s ease-in-out infinite;
+      flex-shrink: 0;
+    }
+
+    /* ─── MAIN ─── */
     main {
       flex: 1;
       padding: 4rem 3rem 3rem;
@@ -74,7 +147,7 @@
       gap: 3rem;
     }
 
-    /* HERO */
+    /* ─── HERO ─── */
     .hero { display: flex; flex-direction: column; gap: 1rem; }
 
     .hero-title {
@@ -111,9 +184,7 @@
       letter-spacing: 0.05em;
     }
 
-    .title-underscore {
-      color: var(--muted);
-    }
+    .title-underscore { color: var(--muted); }
 
     .define {
       color: var(--purple);
@@ -151,27 +222,31 @@
       display: block;
       width: 3px;
       height: 1.4em;
-      background: var(--purple);
+      background: linear-gradient(to bottom, var(--purple), var(--blue));
       border-radius: 2px;
       flex-shrink: 0;
     }
 
     .hero-sub p {
+      font-family: 'Inter', sans-serif;
       font-size: clamp(1rem, 2.5vw, 1.2rem);
       color: var(--muted);
       font-style: italic;
       font-weight: 300;
+      letter-spacing: 0.01em;
     }
 
+    /* ─── DIVIDER ─── */
     hr {
       border: none;
-      border-top: 1px solid var(--border);
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-bright) 30%, var(--border-bright) 70%, transparent);
       opacity: 0;
       animation: fadeup 0.5s ease 0.4s forwards;
       margin-top: calc(-3rem + 0.6rem);
     }
 
-    /* CONNECT */
+    /* ─── CONNECT ─── */
     .connect {
       opacity: 0;
       animation: fadeup 0.6s ease 0.85s forwards;
@@ -208,15 +283,18 @@
       font-weight: 500;
       text-decoration: none;
       border-radius: 6px;
-      transition: border-color 0.2s, color 0.2s, background 0.2s;
+      transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+      position: relative;
+      will-change: transform;
     }
 
-    .link-btn .bracket { color: var(--blue); }
+    .link-btn .bracket { color: var(--blue); transition: color 0.2s; }
 
     .link-btn:hover {
       border-color: var(--blue);
       color: var(--bright);
       background: var(--surface2);
+      box-shadow: 0 0 14px rgba(88,166,255,0.12), inset 0 0 0 1px rgba(88,166,255,0.05);
     }
 
     .link-btn .arrow {
@@ -226,11 +304,11 @@
     }
 
     .link-btn:hover .arrow {
-      transform: translateX(3px);
+      transform: translateX(4px);
       color: var(--blue);
     }
 
-    /* TERMINAL */
+    /* ─── TERMINAL ─── */
     .terminal-wrap {
       opacity: 0;
       animation: fadeup 0.6s ease 0.65s forwards;
@@ -241,6 +319,12 @@
       border: 1px solid var(--border);
       border-radius: 10px;
       overflow: hidden;
+      transition: border-color 0.25s, box-shadow 0.25s;
+    }
+
+    .terminal:hover {
+      border-color: var(--border-bright);
+      box-shadow: 0 0 24px rgba(88,166,255,0.06);
     }
 
     .term-bar {
@@ -253,10 +337,11 @@
     }
 
     .term-dots { display: flex; gap: 6px; }
-    .term-dot { width: 12px; height: 12px; border-radius: 50%; }
+    .term-dot { width: 12px; height: 12px; border-radius: 50%; transition: filter 0.2s; }
     .td-r { background: #ff5f57; }
     .td-y { background: #febc2e; }
     .td-g { background: #28c840; }
+    .terminal:hover .term-dot { filter: brightness(1.15); }
 
     .term-title {
       position: absolute;
@@ -291,7 +376,7 @@
     .cmd-text { color: var(--bright); font-weight: 500; }
     .out-text { color: var(--text); }
 
-    /* INPUT LINE */
+    /* ─── INPUT LINE ─── */
     .input-line {
       display: flex;
       align-items: center;
@@ -313,7 +398,30 @@
       flex: 1;
     }
 
-    /* REDIRECT OVERLAY */
+    /* Shake animation for wrong input */
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      20% { transform: translateX(-6px); }
+      40% { transform: translateX(6px); }
+      60% { transform: translateX(-4px); }
+      80% { transform: translateX(4px); }
+    }
+
+    .terminal.shake {
+      animation: shake 0.4s ease;
+    }
+
+    /* ─── HELP OUTPUT ─── */
+    .help-grid {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 0 1.2rem;
+      margin-top: 0.2rem;
+    }
+    .help-cmd { color: var(--blue); font-weight: 500; }
+    .help-desc { color: var(--muted); }
+
+    /* ─── REDIRECT OVERLAY ─── */
     .redirect-overlay {
       position: fixed;
       inset: 0;
@@ -326,11 +434,7 @@
       pointer-events: none;
       transition: opacity 0.3s ease;
     }
-
-    .redirect-overlay.active {
-      opacity: 1;
-      pointer-events: all;
-    }
+    .redirect-overlay.active { opacity: 1; pointer-events: all; }
 
     .redirect-terminal {
       background: var(--surface);
@@ -363,21 +467,30 @@
       opacity: 0;
       transition: opacity 0.25s ease;
     }
-
     .rline .prompt { color: var(--green); margin-right: 0.5rem; }
     .rline .cmd-text { color: var(--bright); font-weight: 500; }
     .rline .out-text { color: var(--text); }
     .rline .green-text { color: var(--green); }
 
-    /* FOOTER */
+    /* ─── FOOTER ─── */
     footer {
-      border-top: 1px solid var(--border);
+      border-top: 1px solid transparent;
+      position: relative;
       padding: 1.2rem 3rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
       opacity: 0;
       animation: fadeup 0.5s ease 1.2s forwards;
+      z-index: 1;
+    }
+    footer::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-bright) 30%, var(--border-bright) 70%, transparent);
+      opacity: 0.45;
     }
 
     .foot-left {
@@ -397,10 +510,35 @@
 
     footer .right { font-size: 0.72rem; color: var(--muted); }
 
-    .typewriter {
-      color: var(--muted);
+    .typewriter { color: var(--muted); }
+
+    /* ─── LIGHT THEME ─── */
+    body.light {
+      --bg:       #f5f0e8;
+      --surface:  #ede8df;
+      --surface2: #e2ddd4;
+      --border:   #c8c3ba;
+      --border-bright: #b0aba2;
+      --green:    #1a7f37;
+      --blue:     #0969da;
+      --purple:   #8250df;
+      --muted:    #6e7681;
+      --text:     #24292f;
+      --bright:   #1c2128;
+      --red:      #cf222e;
+      --yellow:   #9a6700;
     }
 
+    body.light::before {
+      background-image: radial-gradient(circle, #b0aba2 1px, transparent 1px);
+      opacity: 0.35;
+    }
+
+    body.light::after {
+      background: radial-gradient(ellipse at center, transparent 40%, var(--bg) 100%);
+    }
+
+    /* ─── ANIMATIONS ─── */
     @keyframes fadeup {
       from { opacity: 0; transform: translateY(12px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -415,9 +553,11 @@
       50%      { opacity: 0.4; transform: scale(0.65); }
     }
 
+    /* ─── RESPONSIVE ─── */
     @media (max-width: 540px) {
       nav, footer { padding-left: 1.5rem; padding-right: 1.5rem; }
       main { padding: 2.5rem 1.5rem; }
+      .nav-status { display: none; }
     }
   </style>
 </head>
@@ -425,7 +565,13 @@
 
   <nav>
     <div class="nav-left"><span>//</span> Personal</div>
-    <div class="nav-badge">Est. 2026 — Ongoing</div>
+    <div class="nav-right">
+      <div class="nav-status">
+        <div class="nav-status-dot"></div>
+        <span id="navStatus">Putian, CN</span>
+      </div>
+      <div class="nav-badge">Est. 2026 — Ongoing</div>
+    </div>
   </nav>
 
   <main>
@@ -441,7 +587,7 @@
     <hr>
 
     <div class="terminal-wrap">
-      <div class="terminal">
+      <div class="terminal" id="terminalEl">
         <div class="term-bar">
           <div class="term-dots">
             <div class="term-dot td-r"></div>
@@ -518,6 +664,52 @@
   // 秘密基地地址，确定后在这里修改
   const SECRET_URL = '#';
 
+  // Status: static Putian, CN
+
+  // ─── TERMINAL COMMANDS ───
+  const COMMANDS = {
+    whoami: () => [
+      { type: 'out', text: 'Ztq - exploring AI, rebuilding at 36.' }
+    ],
+    status: () => [
+      { type: 'out', text: 'Currently: Reborn & learning.' },
+      { type: 'out', text: 'Est. 2026 - Ongoing' },
+    ],
+    'ls skills/': () => [
+      { type: 'out', text: 'real-estate   archive   AI   rebuilding' }
+    ],
+    help: () => [
+      { type: 'help', items: [
+        ['reborn',      '???'],
+        ['theme',       'toggle light / dark mode'],
+        ['clear',       'clear the terminal'],
+      ]}
+    ],
+    theme: () => {
+      document.body.classList.toggle('light');
+      const isLight = document.body.classList.contains('light');
+      return [{ type: 'out', text: `Theme: ${isLight ? 'light' : 'dark'} mode activated.` }];
+    },
+    'theme --light': () => {
+      document.body.classList.add('light');
+      return [{ type: 'out', text: 'Theme: light mode activated.' }];
+    },
+    'theme --dark': () => {
+      document.body.classList.remove('light');
+      return [{ type: 'out', text: 'Theme: dark mode activated.' }];
+    },
+    clear: () => {
+      const body = document.getElementById('termBody');
+      const toRemove = [...body.querySelectorAll('.tline:not([data-initial])')];
+      toRemove.forEach(el => el.remove());
+      return [];
+    },
+    reborn: () => {
+      setTimeout(() => triggerReborn(), 300);
+      return [{ type: 'green', text: 'Access granted. Initiating...' }];
+    },
+  };
+
   window.addEventListener('DOMContentLoaded', () => {
     const body = document.getElementById('termBody');
     let delay = 900;
@@ -538,6 +730,7 @@
         el.classList.add('cursor-line');
         el.style.cursor = 'text';
       }
+      el.dataset.initial = 'true';
 
       body.appendChild(el);
 
@@ -549,8 +742,6 @@
         if (line.type === 'cursor') {
           const tw = el.querySelector('.typewriter');
           const twAnim = startTypewriter(tw);
-
-          // 点击后切换为输入模式
           el.addEventListener('click', () => activateInput(el, tw, twAnim), { once: true });
           document.querySelector('.terminal').addEventListener('click', () => activateInput(el, tw, twAnim), { once: true });
         }
@@ -566,7 +757,6 @@
   function activateInput(el, tw, twAnim) {
     if (twAnim) { twAnim.stopped = true; clearTimeout(twAnim.timer); }
 
-    // 把 typewriter span 直接替换成 input，保持同一行
     const inputEl = document.createElement('input');
     inputEl.type = 'text';
     inputEl.className = 'term-input';
@@ -583,7 +773,6 @@
     function resetIdle() {
       clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
-        // 恢复 typewriter
         const newTw = document.createElement('span');
         newTw.className = 'typewriter';
         inputEl.replaceWith(newTw);
@@ -591,7 +780,7 @@
         const newAnim = startTypewriter(newTw);
         el.addEventListener('click', () => activateInput(el, newTw, newAnim), { once: true });
         document.querySelector('.terminal').addEventListener('click', () => activateInput(el, newTw, newAnim), { once: true });
-      }, 5000);
+      }, 10000);
     }
 
     inputEl.addEventListener('input', resetIdle);
@@ -602,15 +791,81 @@
       clearTimeout(idleTimer);
       if (e.key === 'Enter') {
         const val = inputEl.value.trim().toLowerCase();
-        if (val === 'reborn') {
-          inputEl.blur();
-          triggerReborn();
-        } else if (val !== '') {
-          inputEl.style.color = 'var(--red)';
-          setTimeout(() => { inputEl.style.color = ''; inputEl.value = ''; resetIdle(); }, 600);
-        }
+        processCommand(val, el, inputEl, resetIdle);
       }
     });
+  }
+
+  function processCommand(val, cursorEl, inputEl, resetIdle) {
+    const termEl = document.getElementById('terminalEl');
+    const body = document.getElementById('termBody');
+
+    if (val === '') { resetIdle(); return; }
+
+    // Echo the command
+    const echoEl = document.createElement('div');
+    echoEl.className = 'tline';
+    echoEl.style.opacity = '1';
+    echoEl.innerHTML = `<span class="prompt">#</span> <span class="cmd-text">${escapeHtml(val)}</span>`;
+    body.insertBefore(echoEl, cursorEl);
+
+    const handler = COMMANDS[val] || COMMANDS[val.split(' ')[0]];
+
+    if (handler) {
+      const result = handler();
+      if (val === 'clear') {
+        inputEl.value = '';
+        resetIdle();
+        return;
+      }
+      result.forEach((line, i) => {
+        const outEl = document.createElement('div');
+        outEl.className = 'tline';
+        outEl.style.opacity = '0';
+
+        if (line.type === 'out') {
+          outEl.innerHTML = `<span class="out-text">${escapeHtml(line.text)}</span>`;
+        } else if (line.type === 'green') {
+          outEl.innerHTML = `<span style="color:var(--green)">${escapeHtml(line.text)}</span>`;
+        } else if (line.type === 'help') {
+          const grid = document.createElement('div');
+          grid.className = 'help-grid';
+          line.items.forEach(([cmd, desc]) => {
+            const c = document.createElement('span');
+            c.className = 'help-cmd';
+            c.textContent = cmd;
+            const d = document.createElement('span');
+            d.className = 'help-desc';
+            d.textContent = '# ' + desc;
+            grid.appendChild(c);
+            grid.appendChild(d);
+          });
+          outEl.appendChild(grid);
+        }
+
+        body.insertBefore(outEl, cursorEl);
+        setTimeout(() => { outEl.style.transition = 'opacity 0.18s'; outEl.style.opacity = '1'; }, i * 80);
+      });
+    } else {
+      // Unknown command — shake + red flash
+      termEl.classList.add('shake');
+      setTimeout(() => termEl.classList.remove('shake'), 420);
+
+      const errEl = document.createElement('div');
+      errEl.className = 'tline';
+      errEl.style.opacity = '0';
+      errEl.innerHTML = `<span style="color:var(--red)">command not found: ${escapeHtml(val)}. try 'help'</span>`;
+      body.insertBefore(errEl, cursorEl);
+      setTimeout(() => { errEl.style.transition = 'opacity 0.18s'; errEl.style.opacity = '1'; }, 0);
+    }
+
+    inputEl.value = '';
+    resetIdle();
+    body.scrollTop = body.scrollHeight;
+  }
+
+  function escapeHtml(s) {
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   function startTypewriter(tw) {
@@ -659,7 +914,7 @@
     ];
 
     let d = 100;
-    lines.forEach((l, i) => {
+    lines.forEach((l) => {
       const el = document.createElement('div');
       el.className = 'rline';
 
@@ -672,19 +927,31 @@
       }
 
       rbody.appendChild(el);
-
-      setTimeout(() => {
-        el.style.opacity = '1';
-      }, d);
-
+      setTimeout(() => { el.style.opacity = '1'; }, d);
       d += 420;
     });
 
-    // 跳转
     setTimeout(() => {
       window.location.href = SECRET_URL;
     }, d + 300);
   }
+
+  // ─── MAGNETIC EFFECT on link buttons ───
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.link-btn').forEach(btn => {
+      btn.addEventListener('mousemove', (e) => {
+        const rect = btn.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        const dx = (e.clientX - cx) / (rect.width / 2);
+        const dy = (e.clientY - cy) / (rect.height / 2);
+        btn.style.transform = `translate(${dx * 3}px, ${dy * 2}px)`;
+      });
+      btn.addEventListener('mouseleave', () => {
+        btn.style.transform = '';
+      });
+    });
+  });
 </script>
 </body>
 </html>
