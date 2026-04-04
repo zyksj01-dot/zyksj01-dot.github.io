@@ -511,6 +511,7 @@
     footer .right { font-size: 0.72rem; color: var(--muted); }
 
     .typewriter { color: var(--muted); }
+    .visitor-text { color: var(--purple); }
 
     /* ─── LIGHT THEME ─── */
     body.light {
@@ -646,7 +647,139 @@
     </div>
   </div>
 
+<!-- HTML above this line is unchanged from original -->
 <script>
+  /* ═══════════════════════════════════════════════
+     1. BOOT SCREEN  (first visit only per session)
+  ═══════════════════════════════════════════════ */
+  let _bootPlaying = false;
+
+  (function () {
+    // inject boot overlay
+    const overlay = document.createElement('div');
+    overlay.id = 'ztq-boot';
+    overlay.style.cssText = [
+      'position:fixed','inset:0','z-index:9999',
+      'background:#0e1117',
+      'display:flex','align-items:center','justify-content:center',
+      'font-family:"JetBrains Mono",monospace',
+      'font-size:clamp(0.68rem,1.5vw,0.84rem)',
+      'padding:2rem',
+    ].join(';');
+    const inner = document.createElement('div');
+    inner.style.cssText = 'width:min(520px,100%)';
+    overlay.appendChild(inner);
+
+    if (sessionStorage.getItem('ztq-booted')) {
+      // already booted this session — don't show
+      return;
+    }
+    sessionStorage.setItem('ztq-booted', '1');
+    _bootPlaying = true;
+    document.addEventListener('DOMContentLoaded', () => document.body.prepend(overlay));
+
+    const C = { ok:'#3fb950', dim:'#6e7681', warn:'#d29922', hi:'#58a6ff', bright:'#f0f6fc' };
+    const seq = [
+      { t:0,    color:C.hi,    text:'ZTQ-OS v2.26.0 — Initializing...' },
+      { t:180,  color:C.dim,   text:'Copyright (c) 2026 ztq. All rights reserved.' },
+      { t:340,  color:C.dim,   text:' ' },
+      { t:480,  color:C.ok,    text:'[  OK  ] Loading kernel modules...' },
+      { t:640,  color:C.ok,    text:'[  OK  ] Mounting filesystems...' },
+      { t:800,  color:C.ok,    text:'[  OK  ] Starting network interfaces...' },
+      { t:980,  color:C.warn,  text:'[ WARN ] Memory fragmented — rebuilding from scratch' },
+      { t:1160, color:C.ok,    text:'[  OK  ] Recovery mode: REBORN' },
+      { t:1300, color:C.dim,   text:' ' },
+      { t:1400, bar:true },
+      { t:2180, color:C.dim,   text:' ' },
+      { t:2260, color:C.bright, bold:true, text:'Welcome back, ztq.' },
+      { t:2440, color:C.ok,    text:'System ready.' },
+    ];
+
+    seq.forEach(item => setTimeout(() => {
+      const el = document.createElement('div');
+      el.style.cssText = 'line-height:1.95;white-space:pre;';
+      if (item.bar) {
+        const TOTAL = 22; let filled = 0;
+        el.style.color = C.ok;
+        el.textContent = 'Booting  [' + '░'.repeat(TOTAL) + '] 0%';
+        inner.appendChild(el);
+        const iv = setInterval(() => {
+          filled++;
+          el.textContent = 'Booting  [' + '█'.repeat(filled) + '░'.repeat(TOTAL - filled) + '] ' + Math.round(filled/TOTAL*100) + '%';
+          if (filled >= TOTAL) clearInterval(iv);
+        }, 32);
+      } else {
+        el.style.color = item.color;
+        if (item.bold) el.style.fontWeight = '700';
+        el.textContent = item.text;
+        inner.appendChild(el);
+      }
+    }, item.t));
+
+    // fade out after sequence
+    setTimeout(() => {
+      overlay.style.transition = 'opacity 0.5s ease';
+      overlay.style.opacity = '0';
+      setTimeout(() => overlay.remove(), 520);
+    }, 2900);
+  })();
+
+  /* ═══════════════════════════════════════════════
+     2. VISITOR COUNTER
+  ═══════════════════════════════════════════════ */
+  const _visitors = (() => {
+    try {
+      const n = (parseInt(localStorage.getItem('ztq-v'), 10) || 0) + 1;
+      localStorage.setItem('ztq-v', String(n));
+      return n;
+    } catch { return 1; }
+  })();
+
+  /* ═══════════════════════════════════════════════
+     3. COMMAND HISTORY
+  ═══════════════════════════════════════════════ */
+  const _history = [];
+  let _histIdx = -1;
+
+  /* ═══════════════════════════════════════════════
+     4. TYPEWRITER HELPERS
+  ═══════════════════════════════════════════════ */
+  // type `text` into `span` character by character, call onDone when finished
+  function typeInto(span, text, speed, onDone) {
+    let i = 0;
+    (function tick() {
+      span.textContent = text.slice(0, ++i);
+      if (i < text.length) setTimeout(tick, speed);
+      else if (onDone) setTimeout(onDone, 50);
+    })();
+  }
+
+  // type an array of [className, text] lines sequentially into container, before anchorNode
+  function typeLines(entries, container, anchorNode, speed) {
+    let i = 0;
+    function next() {
+      if (i >= entries.length) return;
+      const [cls, text] = entries[i++];
+      const row = document.createElement('div');
+      row.className = 'tline';
+      row.style.opacity = '1';
+      const span = document.createElement('span');
+      span.className = cls;
+      row.appendChild(span);
+      if (anchorNode && anchorNode.parentNode === container) {
+        container.insertBefore(row, anchorNode);
+      } else {
+        container.appendChild(row);
+      }
+      container.scrollTop = container.scrollHeight;
+      typeInto(span, text, speed, next);
+    }
+    next();
+  }
+
+  /* ═══════════════════════════════════════════════
+     5. TERMINAL DATA
+  ═══════════════════════════════════════════════ */
   const termLines = [
     { type: 'cmd', text: 'whoami' },
     { type: 'out', text: 'Ztq - exploring AI, rebuilding at 36.' },
@@ -661,238 +794,228 @@
     { type: 'cursor' },
   ];
 
-  // 秘密基地地址，确定后在这里修改
   const SECRET_URL = '#';
 
-  // Status: static Putian, CN
-
-  // ─── TERMINAL COMMANDS ───
+  /* ═══════════════════════════════════════════════
+     6. COMMANDS
+  ═══════════════════════════════════════════════ */
   const COMMANDS = {
-    whoami: () => [
-      { type: 'out', text: 'Ztq - exploring AI, rebuilding at 36.' }
+    whoami:       () => [['out-text', 'Ztq - exploring AI, rebuilding at 36.']],
+    status:       () => [['out-text', 'Currently: Reborn & learning.'], ['out-text', 'Est. 2026 - Ongoing']],
+    'ls skills/': () => [['out-text', 'real-estate   archive   AI   rebuilding']],
+    links:        () => [
+      ['out-text', '片区经济测算  ->  https://ztq.uk/calculator.html'],
+      ['out-text', '工程档案管理  ->  https://ztq.uk/archive.html'],
+      ['out-text', 'X / Twitter   ->  https://x.com/'],
     ],
-    status: () => [
-      { type: 'out', text: 'Currently: Reborn & learning.' },
-      { type: 'out', text: 'Est. 2026 - Ongoing' },
-    ],
-    'ls skills/': () => [
-      { type: 'out', text: 'real-estate   archive   AI   rebuilding' }
-    ],
-    help: () => [
-      { type: 'help', items: [
-        ['reborn',      '???'],
-        ['theme',       'toggle light / dark mode'],
-        ['clear',       'clear the terminal'],
-      ]}
-    ],
+    visitors: () => {
+      const pad = String(_visitors).padStart(4, '0');
+      const ts  = new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC';
+      return [
+        ['visitor-text', 'visitor_count  = ' + pad],
+        ['visitor-text', 'session_start  = ' + ts],
+        ['visitor-text', 'status         = [ online ]'],
+      ];
+    },
+    help: () => { _renderHelp(); return null; },
     theme: () => {
       document.body.classList.toggle('light');
-      const isLight = document.body.classList.contains('light');
-      return [{ type: 'out', text: `Theme: ${isLight ? 'light' : 'dark'} mode activated.` }];
+      const m = document.body.classList.contains('light') ? 'light' : 'dark';
+      return [['out-text', 'Theme: ' + m + ' mode activated.']];
     },
-    'theme --light': () => {
-      document.body.classList.add('light');
-      return [{ type: 'out', text: 'Theme: light mode activated.' }];
-    },
-    'theme --dark': () => {
-      document.body.classList.remove('light');
-      return [{ type: 'out', text: 'Theme: dark mode activated.' }];
-    },
+    'theme --light': () => { document.body.classList.add('light');    return [['out-text', 'Theme: light mode activated.']]; },
+    'theme --dark':  () => { document.body.classList.remove('light'); return [['out-text', 'Theme: dark mode activated.']];  },
     clear: () => {
-      const body = document.getElementById('termBody');
-      const toRemove = [...body.querySelectorAll('.tline:not([data-initial])')];
-      toRemove.forEach(el => el.remove());
-      return [];
+      document.querySelectorAll('#termBody .tline:not([data-initial])').forEach(el => el.remove());
+      return null;
     },
-    reborn: () => {
-      setTimeout(() => triggerReborn(), 300);
-      return [{ type: 'green', text: 'Access granted. Initiating...' }];
-    },
+    reborn: () => { setTimeout(triggerReborn, 300); return [['out-text', 'Access granted. Initiating...']]; },
   };
 
+  function _renderHelp() {
+    const termBody = document.getElementById('termBody');
+    const cursorDiv = termBody.querySelector('.cursor-line');
+    const row = document.createElement('div');
+    row.className = 'tline';
+    row.style.opacity = '1';
+    const grid = document.createElement('div');
+    grid.className = 'help-grid';
+    [
+      ['whoami',      'print user info'],
+      ['status',      'current status'],
+      ['ls skills/',  'list skills'],
+      ['links',       'show active links'],
+      ['visitors',    'show visitor count'],
+      ['theme',       'toggle light / dark mode'],
+      ['clear',       'clear terminal'],
+      ['reborn',      '???'],
+    ].forEach(([cmd, desc]) => {
+      const c = document.createElement('span'); c.className = 'help-cmd'; c.textContent = cmd;
+      const d = document.createElement('span'); d.className = 'help-desc'; d.textContent = '# ' + desc;
+      grid.appendChild(c); grid.appendChild(d);
+    });
+    row.appendChild(grid);
+    if (cursorDiv && cursorDiv.parentNode === termBody) termBody.insertBefore(row, cursorDiv);
+    else termBody.appendChild(row);
+  }
+
+  /* ═══════════════════════════════════════════════
+     7. PROCESS COMMAND
+  ═══════════════════════════════════════════════ */
+  function processCommand(val, cursorDiv, inputEl, resetIdle) {
+    const termEl   = document.getElementById('terminalEl');
+    const termBody = document.getElementById('termBody');
+    if (!val) { resetIdle(); return; }
+
+    // history
+    if (_history[_history.length - 1] !== val) { _history.push(val); if (_history.length > 60) _history.shift(); }
+    _histIdx = -1;
+
+    // echo
+    const echo = document.createElement('div');
+    echo.className = 'tline'; echo.style.opacity = '1';
+    echo.innerHTML = `<span class="prompt">#</span> <span class="cmd-text">${escapeHtml(val)}</span>`;
+    if (cursorDiv && cursorDiv.parentNode === termBody) termBody.insertBefore(echo, cursorDiv);
+    else termBody.appendChild(echo);
+
+    const handler = COMMANDS[val] || COMMANDS[val.split(' ')[0]];
+    if (handler) {
+      const result = handler();
+      if (result) typeLines(result, termBody, cursorDiv, 16);
+    } else {
+      // unknown — shake + typewriter error
+      termEl.classList.add('shake');
+      setTimeout(() => termEl.classList.remove('shake'), 420);
+      const errRow = document.createElement('div');
+      errRow.className = 'tline'; errRow.style.opacity = '1';
+      const errSpan = document.createElement('span'); errSpan.style.color = 'var(--red)';
+      errRow.appendChild(errSpan);
+      if (cursorDiv && cursorDiv.parentNode === termBody) termBody.insertBefore(errRow, cursorDiv);
+      else termBody.appendChild(errRow);
+      typeInto(errSpan, `command not found: ${val}. try 'help'`, 16);
+    }
+
+    inputEl.value = '';
+    resetIdle();
+    termBody.scrollTop = termBody.scrollHeight;
+  }
+
+  /* ═══════════════════════════════════════════════
+     8. INITIAL TERMINAL RENDER  (typewriter)
+  ═══════════════════════════════════════════════ */
   window.addEventListener('DOMContentLoaded', () => {
-    const body = document.getElementById('termBody');
-    let delay = 900;
+    const termBody = document.getElementById('termBody');
+    // wait for boot to finish if it's playing
+    const delay = _bootPlaying ? 3100 : 300;
 
-    termLines.forEach((line) => {
-      const el = document.createElement('div');
-      el.className = 'tline';
-      el.style.opacity = '0';
-
-      if (line.type === 'cmd') {
-        el.innerHTML = `<span class="prompt">#</span> <span class="cmd-text">${line.text}</span>`;
-      } else if (line.type === 'out') {
-        el.innerHTML = `<span class="out-text">${line.text}</span>`;
-      } else if (line.type === 'empty') {
-        el.classList.add('empty');
-      } else if (line.type === 'cursor') {
-        el.innerHTML = `<span class="prompt">#</span> <span class="typewriter"></span>`;
-        el.classList.add('cursor-line');
-        el.style.cursor = 'text';
-      }
-      el.dataset.initial = 'true';
-
-      body.appendChild(el);
-
-      const t = delay;
-      setTimeout(() => {
-        el.style.transition = 'opacity 0.2s ease';
+    setTimeout(() => {
+      let idx = 0;
+      function renderNext() {
+        if (idx >= termLines.length) return;
+        const line = termLines[idx++];
+        const el = document.createElement('div');
+        el.className = 'tline';
         el.style.opacity = '1';
+        el.dataset.initial = 'true';
+        termBody.appendChild(el);
 
-        if (line.type === 'cursor') {
+        if (line.type === 'empty') {
+          el.classList.add('empty');
+          setTimeout(renderNext, 55);
+
+        } else if (line.type === 'cmd') {
+          const prompt = document.createElement('span'); prompt.className = 'prompt'; prompt.textContent = '#';
+          const sp = document.createElement('span'); sp.className = 'cmd-text';
+          el.appendChild(prompt); el.appendChild(document.createTextNode(' ')); el.appendChild(sp);
+          typeInto(sp, line.text, 40, renderNext);
+
+        } else if (line.type === 'out') {
+          const sp = document.createElement('span'); sp.className = 'out-text';
+          el.appendChild(sp);
+          typeInto(sp, line.text, 18, renderNext);
+
+        } else if (line.type === 'cursor') {
+          el.innerHTML = `<span class="prompt">#</span> <span class="typewriter"></span>`;
+          el.classList.add('cursor-line'); el.style.cursor = 'text';
           const tw = el.querySelector('.typewriter');
           const twAnim = startTypewriter(tw);
-          el.addEventListener('click', () => activateInput(el, tw, twAnim), { once: true });
-          document.querySelector('.terminal').addEventListener('click', () => activateInput(el, tw, twAnim), { once: true });
+          const activate = () => activateInput(el, tw, twAnim);
+          el.addEventListener('click', activate, { once: true });
+          document.querySelector('.terminal').addEventListener('click', activate, { once: true });
         }
-      }, t);
-
-      if (line.type === 'cmd')        delay += 340;
-      else if (line.type === 'out')   delay += 190;
-      else if (line.type === 'empty') delay += 80;
-      else if (line.type === 'cursor') delay += 200;
-    });
+      }
+      renderNext();
+    }, delay);
   });
 
+  /* ═══════════════════════════════════════════════
+     9. INPUT ACTIVATION  (click to type)
+  ═══════════════════════════════════════════════ */
   function activateInput(el, tw, twAnim) {
     if (twAnim) { twAnim.stopped = true; clearTimeout(twAnim.timer); }
-
     const inputEl = document.createElement('input');
-    inputEl.type = 'text';
-    inputEl.className = 'term-input';
-    inputEl.setAttribute('autocomplete', 'off');
-    inputEl.setAttribute('spellcheck', 'false');
-    inputEl.setAttribute('autocorrect', 'off');
-    inputEl.setAttribute('autocapitalize', 'off');
+    inputEl.type = 'text'; inputEl.className = 'term-input';
+    inputEl.setAttribute('autocomplete','off'); inputEl.setAttribute('spellcheck','false');
+    inputEl.setAttribute('autocorrect','off');  inputEl.setAttribute('autocapitalize','off');
     el.style.cursor = 'default';
     tw.replaceWith(inputEl);
     inputEl.focus();
 
     let idleTimer = null;
-
     function resetIdle() {
       clearTimeout(idleTimer);
       idleTimer = setTimeout(() => {
-        const newTw = document.createElement('span');
-        newTw.className = 'typewriter';
-        inputEl.replaceWith(newTw);
-        el.style.cursor = 'text';
+        const newTw = document.createElement('span'); newTw.className = 'typewriter';
+        inputEl.replaceWith(newTw); el.style.cursor = 'text';
         const newAnim = startTypewriter(newTw);
-        el.addEventListener('click', () => activateInput(el, newTw, newAnim), { once: true });
-        document.querySelector('.terminal').addEventListener('click', () => activateInput(el, newTw, newAnim), { once: true });
+        const reactivate = () => activateInput(el, newTw, newAnim);
+        el.addEventListener('click', reactivate, { once: true });
+        document.querySelector('.terminal').addEventListener('click', reactivate, { once: true });
       }, 10000);
     }
-
     inputEl.addEventListener('input', resetIdle);
     inputEl.addEventListener('focus', resetIdle);
     resetIdle();
 
-    inputEl.addEventListener('keydown', (e) => {
+    inputEl.addEventListener('keydown', e => {
       clearTimeout(idleTimer);
-      if (e.key === 'Enter') {
-        const val = inputEl.value.trim().toLowerCase();
-        processCommand(val, el, inputEl, resetIdle);
+      if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        if (!_history.length) return;
+        if (_histIdx === -1) _histIdx = _history.length - 1; else if (_histIdx > 0) _histIdx--;
+        inputEl.value = _history[_histIdx];
+        requestAnimationFrame(() => inputEl.setSelectionRange(inputEl.value.length, inputEl.value.length));
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        if (_histIdx === -1) return;
+        _histIdx++;
+        inputEl.value = _histIdx >= _history.length ? (_histIdx = -1, '') : _history[_histIdx];
+      } else if (e.key === 'Enter') {
+        processCommand(inputEl.value.trim().toLowerCase(), el, inputEl, resetIdle);
       }
     });
   }
 
-  function processCommand(val, cursorEl, inputEl, resetIdle) {
-    const termEl = document.getElementById('terminalEl');
-    const body = document.getElementById('termBody');
-
-    if (val === '') { resetIdle(); return; }
-
-    // Echo the command
-    const echoEl = document.createElement('div');
-    echoEl.className = 'tline';
-    echoEl.style.opacity = '1';
-    echoEl.innerHTML = `<span class="prompt">#</span> <span class="cmd-text">${escapeHtml(val)}</span>`;
-    body.insertBefore(echoEl, cursorEl);
-
-    const handler = COMMANDS[val] || COMMANDS[val.split(' ')[0]];
-
-    if (handler) {
-      const result = handler();
-      if (val === 'clear') {
-        inputEl.value = '';
-        resetIdle();
-        return;
-      }
-      result.forEach((line, i) => {
-        const outEl = document.createElement('div');
-        outEl.className = 'tline';
-        outEl.style.opacity = '0';
-
-        if (line.type === 'out') {
-          outEl.innerHTML = `<span class="out-text">${escapeHtml(line.text)}</span>`;
-        } else if (line.type === 'green') {
-          outEl.innerHTML = `<span style="color:var(--green)">${escapeHtml(line.text)}</span>`;
-        } else if (line.type === 'help') {
-          const grid = document.createElement('div');
-          grid.className = 'help-grid';
-          line.items.forEach(([cmd, desc]) => {
-            const c = document.createElement('span');
-            c.className = 'help-cmd';
-            c.textContent = cmd;
-            const d = document.createElement('span');
-            d.className = 'help-desc';
-            d.textContent = '# ' + desc;
-            grid.appendChild(c);
-            grid.appendChild(d);
-          });
-          outEl.appendChild(grid);
-        }
-
-        body.insertBefore(outEl, cursorEl);
-        setTimeout(() => { outEl.style.transition = 'opacity 0.18s'; outEl.style.opacity = '1'; }, i * 80);
-      });
-    } else {
-      // Unknown command — shake + red flash
-      termEl.classList.add('shake');
-      setTimeout(() => termEl.classList.remove('shake'), 420);
-
-      const errEl = document.createElement('div');
-      errEl.className = 'tline';
-      errEl.style.opacity = '0';
-      errEl.innerHTML = `<span style="color:var(--red)">command not found: ${escapeHtml(val)}. try 'help'</span>`;
-      body.insertBefore(errEl, cursorEl);
-      setTimeout(() => { errEl.style.transition = 'opacity 0.18s'; errEl.style.opacity = '1'; }, 0);
-    }
-
-    inputEl.value = '';
-    resetIdle();
-    body.scrollTop = body.scrollHeight;
-  }
-
+  /* ═══════════════════════════════════════════════
+     10. UTILITIES
+  ═══════════════════════════════════════════════ */
   function escapeHtml(s) {
     return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   function startTypewriter(tw) {
     const text = 'waiting for input...';
-    let index = 0;
-    let deleting = false;
+    let index = 0, deleting = false;
     const handle = { timer: null, stopped: false };
-
     function loop() {
       if (handle.stopped) return;
       if (!deleting) {
-        tw.textContent = text.slice(0, index + 1);
-        index++;
-        if (index === text.length) {
-          deleting = true;
-          handle.timer = setTimeout(loop, 1800);
-          return;
-        }
+        tw.textContent = text.slice(0, ++index);
+        if (index === text.length) { deleting = true; handle.timer = setTimeout(loop, 1800); return; }
         handle.timer = setTimeout(loop, 80);
       } else {
-        tw.textContent = text.slice(0, index - 1);
-        index--;
-        if (index === 0) {
-          deleting = false;
-          handle.timer = setTimeout(loop, 600);
-          return;
-        }
+        tw.textContent = text.slice(0, --index);
+        if (index === 0) { deleting = false; handle.timer = setTimeout(loop, 600); return; }
         handle.timer = setTimeout(loop, 40);
       }
     }
@@ -900,56 +1023,42 @@
     return handle;
   }
 
+  /* ═══════════════════════════════════════════════
+     11. REBORN OVERLAY
+  ═══════════════════════════════════════════════ */
   function triggerReborn() {
     const overlay = document.getElementById('redirectOverlay');
     const rbody   = document.getElementById('redirectBody');
-
     overlay.classList.add('active');
-
     const lines = [
-      { text: 'reborn', type: 'cmd' },
-      { text: 'Initiating...', type: 'out' },
-      { text: 'Access granted.', type: 'green' },
-      { text: 'Redirecting to base...', type: 'out' },
+      { type:'cmd',   text:'reborn' },
+      { type:'out',   text:'Initiating...' },
+      { type:'green', text:'Access granted.' },
+      { type:'out',   text:'Redirecting to base...' },
     ];
-
     let d = 100;
-    lines.forEach((l) => {
-      const el = document.createElement('div');
-      el.className = 'rline';
-
-      if (l.type === 'cmd') {
-        el.innerHTML = `<span class="prompt">#</span> <span class="cmd-text">${l.text}</span>`;
-      } else if (l.type === 'green') {
-        el.innerHTML = `<span class="green-text">${l.text}</span>`;
-      } else {
-        el.innerHTML = `<span class="out-text">${l.text}</span>`;
-      }
-
+    lines.forEach(l => {
+      const el = document.createElement('div'); el.className = 'rline';
+      if (l.type === 'cmd')   el.innerHTML = `<span class="prompt">#</span> <span class="cmd-text">${l.text}</span>`;
+      else if (l.type==='green') el.innerHTML = `<span class="green-text">${l.text}</span>`;
+      else                    el.innerHTML = `<span class="out-text">${l.text}</span>`;
       rbody.appendChild(el);
-      setTimeout(() => { el.style.opacity = '1'; }, d);
+      setTimeout(() => el.style.opacity = '1', d);
       d += 420;
     });
-
-    setTimeout(() => {
-      window.location.href = SECRET_URL;
-    }, d + 300);
+    setTimeout(() => window.location.href = SECRET_URL, d + 300);
   }
 
-  // ─── MAGNETIC EFFECT on link buttons ───
+  /* ═══════════════════════════════════════════════
+     12. MAGNETIC LINK BUTTONS
+  ═══════════════════════════════════════════════ */
   document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.link-btn').forEach(btn => {
-      btn.addEventListener('mousemove', (e) => {
-        const rect = btn.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-        const dx = (e.clientX - cx) / (rect.width / 2);
-        const dy = (e.clientY - cy) / (rect.height / 2);
-        btn.style.transform = `translate(${dx * 3}px, ${dy * 2}px)`;
+      btn.addEventListener('mousemove', e => {
+        const r = btn.getBoundingClientRect();
+        btn.style.transform = `translate(${(e.clientX - r.left - r.width/2) / (r.width/2) * 3}px, ${(e.clientY - r.top - r.height/2) / (r.height/2) * 2}px)`;
       });
-      btn.addEventListener('mouseleave', () => {
-        btn.style.transform = '';
-      });
+      btn.addEventListener('mouseleave', () => btn.style.transform = '');
     });
   });
 </script>
