@@ -4,8 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>ztq made</title>
+  <meta name="description" content="ztq — Reborn At 36. Exploring AI, real estate &amp; rebuilding from scratch.">
+  <meta property="og:title" content="ztq">
+  <meta property="og:description" content="Reborn At 36. Exploring AI, real estate &amp; rebuilding.">
+  <meta property="og:url" content="https://ztq.uk/">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ztq">
+  <meta name="twitter:description" content="Reborn At 36.">
+  <meta name="theme-color" content="#0e1117">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%230e1117'/><text x='50' y='72' font-size='62' text-anchor='middle' font-family='monospace' fill='%2358a6ff'>z</text></svg>">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -560,6 +570,17 @@
       main { padding: 2.5rem 1.5rem; }
       .nav-status { display: none; }
     }
+
+    /* ─── REDUCED MOTION ─── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .title-cursor { animation: none; opacity: 1; }
+      .nav-status-dot, .foot-dot { animation: none; opacity: 1; }
+    }
   </style>
 </head>
 <body>
@@ -578,7 +599,7 @@
   <main>
     <div class="hero">
       <div class="hero-title">
-        <h1><span class="define">#define</span> ztq<span class="title-underscore">_</span><span class="title-cursor"></span></h1>
+        <h1 aria-label="ztq"><span class="define">#define</span> ztq<span class="title-underscore">_</span><span class="title-cursor"></span></h1>
       </div>
       <div class="hero-sub">
         <p>Reborn At 36.</p>
@@ -588,7 +609,7 @@
     <hr>
 
     <div class="terminal-wrap">
-      <div class="terminal" id="terminalEl">
+      <div class="terminal" id="terminalEl" role="region" aria-label="Interactive terminal">
         <div class="term-bar">
           <div class="term-dots">
             <div class="term-dot td-r"></div>
@@ -597,7 +618,7 @@
           </div>
           <div class="term-title">ztq@reborn ~ </div>
         </div>
-        <div class="term-body" id="termBody"></div>
+        <div class="term-body" id="termBody" role="log" aria-live="polite" aria-label="Terminal output"></div>
       </div>
     </div>
 
@@ -608,7 +629,7 @@
           <span class="bracket">[</span><span class="zh">片区经济测算</span><span class="bracket">]</span>
           <span class="arrow">→</span>
         </a>
-        <a class="link-btn" href="https://ztq.uk/archive.html" target="_blank">
+        <a class="link-btn" href="https://ztq.uk/archive.html" target="_blank" aria-label="工程档案管理">
           <span class="bracket">[</span><span class="zh">工程档案管理</span><span class="bracket">]</span>
           <span class="arrow">→</span>
         </a>
@@ -649,6 +670,9 @@
 
 <!-- HTML above this line is unchanged from original -->
 <script>
+  // restore theme preference
+  if (localStorage.getItem('ztq-theme') === 'light') document.body.classList.add('light');
+
   /* ═══════════════════════════════════════════════
      1. BOOT SCREEN  (first visit only per session)
   ═══════════════════════════════════════════════ */
@@ -729,6 +753,11 @@
   ═══════════════════════════════════════════════ */
   const _visitors = (() => {
     try {
+      // counts page loads on this device (not real unique visitors)
+      if (sessionStorage.getItem('ztq-counted')) {
+        return parseInt(localStorage.getItem('ztq-v'), 10) || 1;
+      }
+      sessionStorage.setItem('ztq-counted', '1');
       const n = (parseInt(localStorage.getItem('ztq-v'), 10) || 0) + 1;
       localStorage.setItem('ztq-v', String(n));
       return n;
@@ -794,7 +823,7 @@
     { type: 'cursor' },
   ];
 
-  const SECRET_URL = '#';
+  const SECRET_URL = '#'; // TODO: set real URL if needed
 
   /* ═══════════════════════════════════════════════
      6. COMMANDS
@@ -803,6 +832,7 @@
     whoami:       () => [['out-text', 'Ztq - exploring AI, rebuilding at 36.']],
     status:       () => [['out-text', 'Currently: Reborn & learning.'], ['out-text', 'Est. 2026 - Ongoing']],
     'ls skills/': () => [['out-text', 'real-estate   archive   AI   rebuilding']],
+    ls:           () => [['out-text', 'skills/   links/   status/']],
     links:        () => [
       ['out-text', '片区经济测算  ->  https://ztq.uk/calculator.html'],
       ['out-text', '工程档案管理  ->  https://ztq.uk/archive.html'],
@@ -821,10 +851,19 @@
     theme: () => {
       document.body.classList.toggle('light');
       const m = document.body.classList.contains('light') ? 'light' : 'dark';
+      localStorage.setItem('ztq-theme', m);
       return [['out-text', 'Theme: ' + m + ' mode activated.']];
     },
-    'theme --light': () => { document.body.classList.add('light');    return [['out-text', 'Theme: light mode activated.']]; },
-    'theme --dark':  () => { document.body.classList.remove('light'); return [['out-text', 'Theme: dark mode activated.']];  },
+    'theme --light': () => {
+      document.body.classList.add('light');
+      localStorage.setItem('ztq-theme', 'light');
+      return [['out-text', 'Theme: light mode activated.']];
+    },
+    'theme --dark':  () => {
+      document.body.classList.remove('light');
+      localStorage.setItem('ztq-theme', 'dark');
+      return [['out-text', 'Theme: dark mode activated.']];
+    },
     clear: () => {
       document.querySelectorAll('#termBody .tline:not([data-initial])').forEach(el => el.remove());
       return null;
@@ -878,7 +917,7 @@
     if (cursorDiv && cursorDiv.parentNode === termBody) termBody.insertBefore(echo, cursorDiv);
     else termBody.appendChild(echo);
 
-    const handler = COMMANDS[val] || COMMANDS[val.split(' ')[0]];
+    const handler = COMMANDS[val] ?? COMMANDS[val.split(' ')[0]] ?? null;
     if (handler) {
       const result = handler();
       if (result) typeLines(result, termBody, cursorDiv, 16);
@@ -941,7 +980,9 @@
           const twAnim = startTypewriter(tw);
           const activate = () => activateInput(el, tw, twAnim);
           el.addEventListener('click', activate, { once: true });
+          el.addEventListener('touchstart', activate, { once: true, passive: true });
           document.querySelector('.terminal').addEventListener('click', activate, { once: true });
+          document.querySelector('.terminal').addEventListener('touchstart', activate, { once: true, passive: true });
         }
       }
       renderNext();
@@ -970,7 +1011,9 @@
         const newAnim = startTypewriter(newTw);
         const reactivate = () => activateInput(el, newTw, newAnim);
         el.addEventListener('click', reactivate, { once: true });
+        el.addEventListener('touchstart', reactivate, { once: true, passive: true });
         document.querySelector('.terminal').addEventListener('click', reactivate, { once: true });
+        document.querySelector('.terminal').addEventListener('touchstart', reactivate, { once: true, passive: true });
       }, 10000);
     }
     inputEl.addEventListener('input', resetIdle);
@@ -979,7 +1022,17 @@
 
     inputEl.addEventListener('keydown', e => {
       clearTimeout(idleTimer);
-      if (e.key === 'ArrowUp') {
+      if (e.key === 'Tab') {
+        e.preventDefault();
+        const partial = inputEl.value.toLowerCase();
+        if (!partial) return;
+        const allCmds = Object.keys(COMMANDS);
+        const match = allCmds.find(k => k.startsWith(partial));
+        if (match) {
+          inputEl.value = match;
+          requestAnimationFrame(() => inputEl.setSelectionRange(match.length, match.length));
+        }
+      } else if (e.key === 'ArrowUp') {
         e.preventDefault();
         if (!_history.length) return;
         if (_histIdx === -1) _histIdx = _history.length - 1; else if (_histIdx > 0) _histIdx--;
@@ -1000,26 +1053,26 @@
      10. UTILITIES
   ═══════════════════════════════════════════════ */
   function escapeHtml(s) {
-    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
   }
 
   function startTypewriter(tw) {
-    const text = 'waiting for input...';
-    let index = 0, deleting = false;
+    const hints = ["type 'help' to explore...", "try: whoami", "try: links", "try: theme", "try: visitors"];
+    let hi = 0, ci = 0, deleting = false;
     const handle = { timer: null, stopped: false };
     function loop() {
       if (handle.stopped) return;
+      const word = hints[hi % hints.length];
       if (!deleting) {
-        tw.textContent = text.slice(0, ++index);
-        if (index === text.length) { deleting = true; handle.timer = setTimeout(loop, 1800); return; }
-        handle.timer = setTimeout(loop, 80);
+        tw.textContent = word.slice(0, ++ci);
+        if (ci >= word.length) { deleting = true; handle.timer = setTimeout(loop, 1400); return; }
       } else {
-        tw.textContent = text.slice(0, --index);
-        if (index === 0) { deleting = false; handle.timer = setTimeout(loop, 600); return; }
-        handle.timer = setTimeout(loop, 40);
+        tw.textContent = word.slice(0, --ci);
+        if (ci === 0) { deleting = false; hi++; handle.timer = setTimeout(loop, 400); return; }
       }
+      handle.timer = setTimeout(loop, deleting ? 35 : 55);
     }
-    handle.timer = setTimeout(loop, 300);
+    handle.timer = setTimeout(loop, 600);
     return handle;
   }
 
@@ -1028,25 +1081,35 @@
   ═══════════════════════════════════════════════ */
   function triggerReborn() {
     const overlay = document.getElementById('redirectOverlay');
-    const rbody   = document.getElementById('redirectBody');
+    const body    = document.getElementById('redirectBody');
+    body.innerHTML = '';
     overlay.classList.add('active');
+
     const lines = [
-      { type:'cmd',   text:'reborn' },
-      { type:'out',   text:'Initiating...' },
-      { type:'green', text:'Access granted.' },
-      { type:'out',   text:'Redirecting to base...' },
+      { delay: 0,    cls: 'prompt',    text: '# reborn --init' },
+      { delay: 400,  cls: 'out-text',  text: 'Reloading identity matrix...' },
+      { delay: 900,  cls: 'green-text',text: '[  OK  ] Ego dissolved.' },
+      { delay: 1400, cls: 'green-text',text: '[  OK  ] New self loaded.' },
+      { delay: 1900, cls: 'out-text',  text: 'Welcome to the other side.' },
     ];
-    let d = 100;
-    lines.forEach(l => {
-      const el = document.createElement('div'); el.className = 'rline';
-      if (l.type === 'cmd')   el.innerHTML = `<span class="prompt">#</span> <span class="cmd-text">${l.text}</span>`;
-      else if (l.type==='green') el.innerHTML = `<span class="green-text">${l.text}</span>`;
-      else                    el.innerHTML = `<span class="out-text">${l.text}</span>`;
-      rbody.appendChild(el);
-      setTimeout(() => el.style.opacity = '1', d);
-      d += 420;
+
+    lines.forEach(({ delay, cls, text }) => {
+      setTimeout(() => {
+        const row = document.createElement('div');
+        row.className = 'rline';
+        row.style.opacity = '1';
+        const span = document.createElement('span');
+        span.className = cls;
+        span.textContent = text;
+        row.appendChild(span);
+        body.appendChild(row);
+      }, delay);
     });
-    setTimeout(() => window.location.href = SECRET_URL, d + 300);
+
+    // 点击任意处关闭
+    setTimeout(() => {
+      overlay.addEventListener('click', () => overlay.classList.remove('active'), { once: true });
+    }, 2200);
   }
 
   /* ═══════════════════════════════════════════════
