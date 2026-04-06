@@ -1106,9 +1106,12 @@
       }, delay);
     });
 
-    // 点击任意处关闭
+    // 点击任意处或按 Escape 关闭
     setTimeout(() => {
-      overlay.addEventListener('click', () => overlay.classList.remove('active'), { once: true });
+      const close = () => overlay.classList.remove('active');
+      overlay.addEventListener('click', close, { once: true });
+      const escHandler = e => { if (e.key === 'Escape') { close(); document.removeEventListener('keydown', escHandler); } };
+      document.addEventListener('keydown', escHandler);
     }, 2200);
   }
 
