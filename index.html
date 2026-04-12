@@ -3,7 +3,23 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>ztq made</title>
+  <title>ztq.uk</title>
+  <meta name="description" content="Reborn At 36. — ztq's personal space.">
+
+  <!-- Favicon: terminal-style SVG -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230e1117'/%3E%3Ctext x='4' y='23' font-family='monospace' font-size='18' font-weight='700' fill='%233fb950'%3E%3E_%3C/text%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='36' fill='%230e1117'/%3E%3Ctext x='20' y='130' font-family='monospace' font-size='100' font-weight='700' fill='%233fb950'%3E%3E%3C/text%3E%3C/svg%3E">
+
+  <!-- Open Graph (微信/Twitter/Discord 收藏预览) -->
+  <meta property="og:title" content="ztq.uk">
+  <meta property="og:description" content="Reborn At 36. — ztq's personal space.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://ztq.uk">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="ztq.uk">
+  <meta name="twitter:description" content="Reborn At 36. — ztq's personal space.">
+  <meta name="theme-color" content="#0e1117">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
   <style>
@@ -612,6 +628,10 @@
           <span class="bracket">[</span><span class="zh">工程档案管理</span><span class="bracket">]</span>
           <span class="arrow">→</span>
         </a>
+        <a class="link-btn" href="https://ztq.uk/cad.html" target="_blank" aria-label="CAD坐标转换">
+          <span class="bracket">[</span><span class="zh">CAD坐标转换</span><span class="bracket">]</span>
+          <span class="arrow">→</span>
+        </a>
         <a class="link-btn" href="https://x.com/" target="_blank">
           <span class="bracket">[</span>X / Twitter<span class="bracket">]</span>
           <span class="arrow">→</span>
@@ -806,8 +826,35 @@
     links:        () => [
       ['out-text', '片区经济测算  ->  https://ztq.uk/calculator.html'],
       ['out-text', '工程档案管理  ->  https://ztq.uk/archive.html'],
+      ['out-text', 'CAD坐标转换   ->  https://ztq.uk/cad.html'],
       ['out-text', 'X / Twitter   ->  https://x.com/'],
     ],
+    cad: () => {
+      setTimeout(() => {
+        const overlay = document.getElementById('redirectOverlay');
+        const rbody   = document.getElementById('redirectBody');
+        rbody.innerHTML = '';
+        overlay.classList.add('active');
+        const lines = [
+          { type:'cmd',   text:'open cad.html' },
+          { type:'out',   text:'Loading CAD坐标转换工具...' },
+          { type:'green', text:'Ready. Redirecting...' },
+        ];
+        let d = 100;
+        lines.forEach(l => {
+          const el = document.createElement('div'); el.className = 'rline';
+          if (l.type === 'cmd')        el.innerHTML = `<span class="prompt">#</span> <span class="cmd-text">${l.text}</span>`;
+          else if (l.type === 'green') el.innerHTML = `<span class="green-text">${l.text}</span>`;
+          else                         el.innerHTML = `<span class="out-text">${l.text}</span>`;
+          rbody.appendChild(el);
+          setTimeout(() => el.style.opacity = '1', d);
+          d += 400;
+        });
+        setTimeout(() => window.open('https://ztq.uk/cad.html', '_blank'), d + 200);
+        setTimeout(() => overlay.classList.remove('active'), d + 800);
+      }, 200);
+      return [['out-text', 'Opening CAD坐标转换工具...']];
+    },
     visitors: () => {
       const pad = String(_visitors).padStart(4, '0');
       const ts  = new Date().toISOString().slice(0,19).replace('T',' ') + ' UTC';
@@ -845,6 +892,7 @@
       ['status',      'current status'],
       ['ls skills/',  'list skills'],
       ['links',       'show active links'],
+      ['cad',         'open CAD coordinate transform tool'],
       ['visitors',    'show visitor count'],
       ['theme',       'toggle light / dark mode'],
       ['clear',       'clear terminal'],
