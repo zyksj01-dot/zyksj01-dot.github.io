@@ -280,49 +280,67 @@
     }
     .section-label::before { content: '>'; }
 
-    .link-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-    }
+    /* ─── FILE TREE ─── */
+    .file-tree { display: flex; flex-direction: column; }
 
-    .link-btn {
-      display: inline-flex;
+    .tree-row {
+      display: grid;
+      grid-template-columns: 22px 26px 160px 1fr auto;
       align-items: center;
-      gap: 0.5rem;
-      padding: 0.6rem 1.1rem;
-      border: 1px solid var(--border);
-      background: var(--surface);
-      color: var(--text);
-      font-family: 'JetBrains Mono', monospace;
       font-size: 0.8rem;
-      font-weight: 500;
+      padding: 0.3rem 0.4rem;
+      border-radius: 4px;
       text-decoration: none;
-      border-radius: 6px;
-      transition: border-color 0.2s, color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
-      position: relative;
-      will-change: transform;
+      transition: background 0.15s;
+      gap: 0;
     }
+    .tree-row:hover { background: rgba(88,166,255,0.07); }
+    .tree-row:hover .tree-name { color: var(--blue); }
+    .tree-row:hover .tree-comment { color: #8b949e; }
 
-    .link-btn .bracket { color: var(--blue); transition: color 0.2s; }
+    .tree-indent { color: var(--border-bright); font-size: 0.78rem; user-select: none; }
 
-    .link-btn:hover {
-      border-color: var(--blue);
-      color: var(--bright);
-      background: var(--surface2);
-      box-shadow: 0 0 14px rgba(88,166,255,0.12), inset 0 0 0 1px rgba(88,166,255,0.05);
+    .tree-badge {
+      font-size: 0.62rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      padding: 1px 4px;
+      border-radius: 3px;
+      user-select: none;
+      width: 22px;
+      text-align: center;
     }
+    .badge-dir  { color: var(--green);  border: 1px solid rgba(63,185,80,0.27);  background: rgba(63,185,80,0.07); }
+    .badge-html { color: var(--blue);   border: 1px solid rgba(88,166,255,0.27); background: rgba(88,166,255,0.07); }
+    .badge-url  { color: var(--purple); border: 1px solid rgba(194,146,255,0.27);background: rgba(194,146,255,0.07); }
+    .badge-msg  { color: var(--yellow); border: 1px solid rgba(210,153,34,0.27); background: rgba(210,153,34,0.07); }
 
-    .link-btn .arrow {
-      transition: transform 0.2s;
+    .tree-name { color: var(--text); padding-left: 0.6rem; transition: color 0.15s; }
+    .tree-name .ext { color: var(--muted); }
+
+    .tree-comment { font-size: 0.75rem; color: var(--muted); transition: color 0.15s; }
+    .tree-comment .slash { color: var(--border-bright); margin-right: 0.25rem; }
+
+    .tree-meta {
+      font-size: 0.7rem;
       color: var(--muted);
-      font-size: 0.85em;
+      text-align: right;
+      opacity: 0.5;
     }
 
-    .link-btn:hover .arrow {
-      transform: translateX(4px);
-      color: var(--blue);
+    .tree-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-bright) 20%, var(--border-bright) 80%, transparent);
+      margin: 0.35rem 0;
+      opacity: 0.4;
     }
+
+    .tree-footer {
+      font-size: 0.7rem;
+      color: var(--muted);
+      padding: 0.4rem 0.4rem 0;
+    }
+    .tree-footer .ok { color: var(--green); }
 
     /* ─── TERMINAL ─── */
     .terminal-wrap {
@@ -618,28 +636,53 @@
     </div>
 
     <div class="connect">
-      <div class="section-label">Connect</div>
-      <div class="link-grid">
-        <a class="link-btn" href="https://ztq.uk/calculator.html" target="_blank" aria-label="片区经济测算">
-          <span class="bracket">[</span><span class="zh">片区经济测算</span><span class="bracket">]</span>
-          <span class="arrow">→</span>
+      <div class="section-label">ls -la tools/</div>
+      <div class="file-tree">
+
+        <a class="tree-row" href="https://ztq.uk/calculator.html" target="_blank">
+          <span class="tree-indent">├─</span>
+          <span class="tree-badge badge-dir">DIR</span>
+          <span class="tree-name">real-estate<span class="ext">/</span></span>
+          <span class="tree-comment"><span class="slash">//</span>片区经济测算</span>
+          <span class="tree-meta">calculator.html</span>
         </a>
-        <a class="link-btn" href="https://ztq.uk/archive.html" target="_blank">
-          <span class="bracket">[</span><span class="zh">工程档案管理</span><span class="bracket">]</span>
-          <span class="arrow">→</span>
+
+        <a class="tree-row" href="https://ztq.uk/archive.html" target="_blank">
+          <span class="tree-indent">├─</span>
+          <span class="tree-badge badge-dir">DIR</span>
+          <span class="tree-name">archive<span class="ext">/</span></span>
+          <span class="tree-comment"><span class="slash">//</span>工程档案管理</span>
+          <span class="tree-meta">archive.html</span>
         </a>
-        <a class="link-btn" href="https://ztq.uk/cad.html" target="_blank" aria-label="CAD坐标转换">
-          <span class="bracket">[</span><span class="zh">CAD坐标转换</span><span class="bracket">]</span>
-          <span class="arrow">→</span>
+
+        <a class="tree-row" href="https://ztq.uk/cad.html" target="_blank">
+          <span class="tree-indent">├─</span>
+          <span class="tree-badge badge-html">HTM</span>
+          <span class="tree-name">cad<span class="ext">.html</span></span>
+          <span class="tree-comment"><span class="slash">//</span>CAD 坐标转换</span>
+          <span class="tree-meta">4.2 kb</span>
         </a>
-        <a class="link-btn" href="https://x.com/" target="_blank">
-          <span class="bracket">[</span>X / Twitter<span class="bracket">]</span>
-          <span class="arrow">→</span>
+
+        <div class="tree-divider"></div>
+
+        <a class="tree-row" href="https://x.com/" target="_blank">
+          <span class="tree-indent">├─</span>
+          <span class="tree-badge badge-url">URL</span>
+          <span class="tree-name">x.com<span class="ext">/ztq</span></span>
+          <span class="tree-comment"><span class="slash">//</span>推特 / X</span>
+          <span class="tree-meta">external ↗</span>
         </a>
-        <a class="link-btn" href="/cdn-cgi/l/email-protection#b3cadcc6c1f3d6ded2dadf9dd0dcde">
-          <span class="bracket">[</span>Email<span class="bracket">]</span>
-          <span class="arrow">→</span>
+
+        <a class="tree-row" href="/cdn-cgi/l/email-protection#b3cadcc6c1f3d6ded2dadf9dd0dcde">
+          <span class="tree-indent">└─</span>
+          <span class="tree-badge badge-msg">MSG</span>
+          <span class="tree-name">ztq<span class="ext">@ztq.uk</span></span>
+          <span class="tree-comment"><span class="slash">//</span>发送邮件</span>
+          <span class="tree-meta">mailto ↗</span>
         </a>
+
+        <div class="tree-divider"></div>
+        <div class="tree-footer"><span class="ok">5</span> entries · ztq@reborn ~/tools</div>
       </div>
     </div>
   </main>
@@ -1097,18 +1140,7 @@
     setTimeout(() => window.location.href = SECRET_URL, d + 300);
   }
 
-  /* ═══════════════════════════════════════════════
-     12. MAGNETIC LINK BUTTONS
-  ═══════════════════════════════════════════════ */
-  document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.link-btn').forEach(btn => {
-      btn.addEventListener('mousemove', e => {
-        const r = btn.getBoundingClientRect();
-        btn.style.transform = `translate(${(e.clientX - r.left - r.width/2) / (r.width/2) * 3}px, ${(e.clientY - r.top - r.height/2) / (r.height/2) * 2}px)`;
-      });
-      btn.addEventListener('mouseleave', () => btn.style.transform = '');
-    });
-  });
+
 </script>
 </body>
 </html>
