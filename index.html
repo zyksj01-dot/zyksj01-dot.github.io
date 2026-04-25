@@ -792,28 +792,121 @@
 
     /* ─── LIGHT THEME ─── */
     body.light {
-      --bg:       #f5f0e8;
-      --surface:  #ede8df;
-      --surface2: #e2ddd4;
-      --border:   #c8c3ba;
-      --border-bright: #b0aba2;
-      --green:    #1a7f37;
+      --bg:       #f7f9fc;
+      --surface:  #ffffff;
+      --surface2: #eef3f8;
+      --border:   #d6dee8;
+      --border-bright: #9aa8b7;
+      --green:    #16833a;
       --blue:     #0969da;
-      --purple:   #8250df;
-      --muted:    #6e7681;
-      --text:     #24292f;
-      --bright:   #1c2128;
+      --purple:   #7a45d1;
+      --muted:    #64748b;
+      --text:     #263241;
+      --bright:   #0f172a;
       --red:      #cf222e;
       --yellow:   #9a6700;
     }
 
     body.light::before {
-      background-image: radial-gradient(circle, #b0aba2 1px, transparent 1px);
-      opacity: 0.35;
+      background-image:
+        linear-gradient(rgba(9,105,218,0.035) 1px, transparent 1px),
+        radial-gradient(circle, rgba(100,116,139,0.34) 1px, transparent 1px);
+      opacity: 0.48;
     }
 
     body.light::after {
-      background: radial-gradient(ellipse at center, transparent 40%, var(--bg) 100%);
+      background:
+        linear-gradient(115deg, rgba(9,105,218,0.08), transparent 34%),
+        linear-gradient(245deg, rgba(22,131,58,0.07), transparent 38%),
+        radial-gradient(ellipse at center, rgba(247,249,252,0) 42%, rgba(247,249,252,0.92) 100%);
+    }
+
+    body.light nav {
+      background: linear-gradient(to bottom, rgba(247,249,252,0.94), rgba(247,249,252,0.74), transparent);
+    }
+
+    body.light h1 {
+      text-shadow: 0 10px 34px rgba(9,105,218,0.13);
+    }
+
+    body.light .define {
+      text-shadow: none;
+    }
+
+    body.light .title-cursor {
+      box-shadow: 0 0 18px rgba(22,131,58,0.24);
+    }
+
+    body.light .nav-badge,
+    body.light .nav-status,
+    body.light .file-tree,
+    body.light .terminal,
+    body.light .redirect-terminal,
+    body.light .contact-panel {
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.88), rgba(239,246,255,0.62)),
+        var(--surface);
+      box-shadow: 0 18px 45px rgba(15,23,42,0.08), inset 0 1px 0 rgba(255,255,255,0.9);
+    }
+
+    body.light .file-tree,
+    body.light .terminal,
+    body.light .redirect-terminal,
+    body.light .contact-panel {
+      border-color: rgba(9,105,218,0.22);
+    }
+
+    body.light .terminal:hover {
+      border-color: rgba(9,105,218,0.38);
+      box-shadow: 0 22px 58px rgba(15,23,42,0.11), 0 0 28px rgba(9,105,218,0.08);
+    }
+
+    body.light .term-bar,
+    body.light .redirect-bar,
+    body.light .contact-bar {
+      background: rgba(238,243,248,0.92);
+      border-bottom-color: rgba(154,168,183,0.34);
+    }
+
+    body.light .tree-row:hover {
+      background: rgba(9,105,218,0.07);
+      border-color: rgba(9,105,218,0.18);
+      box-shadow: 0 10px 22px rgba(15,23,42,0.08);
+    }
+
+    body.light .tree-row:hover .tree-comment {
+      color: #475569;
+    }
+
+    body.light .tree-divider {
+      background: linear-gradient(90deg, transparent, rgba(9,105,218,0.26) 20%, rgba(22,131,58,0.18) 80%, transparent);
+      opacity: 0.58;
+    }
+
+    body.light .version-badge {
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+    }
+
+    body.light .toast {
+      background: rgba(255,255,255,0.92);
+      box-shadow: 0 18px 42px rgba(15,23,42,0.1), 0 0 24px rgba(22,131,58,0.1);
+    }
+
+    body.light .contact-modal {
+      background: rgba(241,245,249,0.76);
+    }
+
+    body.light .contact-field input,
+    body.light .contact-field textarea {
+      background: rgba(248,250,252,0.92);
+      color: var(--bright);
+    }
+
+    body.light .contact-field input:focus,
+    body.light .contact-field textarea:focus {
+      background: #ffffff;
+      box-shadow: 0 0 0 3px rgba(9,105,218,0.11);
     }
 
     /* ─── ANIMATIONS ─── */
