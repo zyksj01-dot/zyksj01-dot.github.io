@@ -595,37 +595,6 @@
 
     footer .right { font-size: 0.72rem; color: var(--muted); }
 
-    .version-badge {
-      position: fixed;
-      right: 1.25rem;
-      bottom: 1.1rem;
-      z-index: 20;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.32rem 0.62rem;
-      border: 1px solid rgba(88,166,255,0.22);
-      border-radius: 4px;
-      background: rgba(14,17,23,0.78);
-      color: var(--muted);
-      font-size: 0.68rem;
-      line-height: 1;
-      letter-spacing: 0.04em;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 28px rgba(0,0,0,0.22);
-      user-select: none;
-    }
-
-    .version-badge::before {
-      content: '>';
-      color: var(--green);
-    }
-
-    .version-badge strong {
-      color: var(--blue);
-      font-weight: 700;
-    }
-
     .toast {
       position: fixed;
       right: 1.25rem;
@@ -902,11 +871,6 @@
       opacity: 0.58;
     }
 
-    body.light .version-badge {
-      background: rgba(255,255,255,0.78);
-      box-shadow: 0 12px 30px rgba(15,23,42,0.08);
-    }
-
     body.light .toast {
       background: rgba(255,255,255,0.92);
       box-shadow: 0 18px 42px rgba(15,23,42,0.1), 0 0 24px rgba(22,131,58,0.1);
@@ -950,11 +914,6 @@
       .nav-status { display: none; }
       .terminal { border-radius: 7px; }
       .term-body { height: 19rem; padding: 1.2rem 1.35rem; }
-      .version-badge {
-        right: 0.9rem;
-        bottom: 0.85rem;
-        font-size: 0.62rem;
-      }
       .toast {
         right: 0.9rem;
         bottom: 3.55rem;
@@ -1019,7 +978,7 @@
         <div class="nav-status-dot"></div>
         <span id="navStatus">Putian, CN</span>
       </div>
-      <div class="nav-badge">Est. 2026 — Ongoing</div>
+      <div class="nav-badge">build v26.04.25</div>
     </div>
   </nav>
 
@@ -1100,10 +1059,6 @@
     </div>
     <div class="right">code everything</div>
   </footer>
-
-  <div class="version-badge" aria-label="Current version">
-    build <strong>v2.26.1</strong>
-  </div>
 
   <div class="toast" id="archiveQueryToast" role="status" aria-live="polite">
     功能正在建设中～
