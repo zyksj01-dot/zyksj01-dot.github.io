@@ -1,0 +1,1955 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>档案位置查询</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef1f3;
+      --panel: #ffffff;
+      --panel-2: #f6f8f9;
+      --text: #1d252c;
+      --muted: #64717c;
+      --wall: #667078;
+      --cabinet: #627c8f;
+      --door: #3e91aa;
+      --column: #858b8e;
+      --ink: #30363a;
+      --active: #d58a23;
+      --soft-line: #d9e0e4;
+      --paper-texture: url("assets/archive-location-paper-texture.png");
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      overflow: hidden;
+      background:
+        linear-gradient(90deg, rgba(238, 241, 243, 0.9), rgba(238, 241, 243, 0.64)),
+        var(--paper-texture) center / cover fixed,
+        var(--bg);
+      color: var(--text);
+      font-family: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(22rem, 28rem) minmax(0, 1fr);
+      grid-template-rows: 3.8rem minmax(0, 1fr);
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .app-header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.75rem 1.05rem;
+      border-bottom: 1px solid rgba(198, 209, 216, 0.84);
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.92), rgba(246, 249, 250, 0.82)),
+        var(--paper-texture) center / cover;
+      box-shadow: 0 0.7rem 1.6rem rgba(38, 50, 60, 0.08);
+      z-index: 8;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.72rem;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      display: grid;
+      place-items: center;
+      width: 2rem;
+      height: 2rem;
+      border: 1px solid rgba(213, 138, 35, 0.72);
+      border-radius: 7px;
+      color: #8b5b18;
+      background: rgba(255, 246, 232, 0.78);
+      font-weight: 800;
+    }
+
+    .brand-title {
+      color: var(--text);
+      font-weight: 800;
+      letter-spacing: 0;
+      white-space: nowrap;
+    }
+
+    .brand-subtitle {
+      padding-left: 0.72rem;
+      border-left: 1px solid #d7dee3;
+      color: rgba(100, 113, 124, 0.82);
+      font: 0.72rem "JetBrains Mono", "Consolas", monospace;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .sidebar {
+      position: relative;
+      display: grid;
+      grid-template-rows: auto auto auto minmax(0, 1fr);
+      gap: 0.9rem;
+      min-height: 0;
+      overflow: hidden;
+      padding: 1.35rem;
+      border-right: 1px solid var(--soft-line);
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(248, 250, 251, 0.86)),
+        var(--paper-texture) left top / 54rem auto;
+      box-shadow: 0.5rem 0 1.8rem rgba(35, 45, 55, 0.08);
+    }
+
+    .sidebar::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 4px;
+      background: linear-gradient(180deg, var(--door), #80a376 48%, var(--active));
+    }
+
+    h1 {
+      margin: 0 0 0.45rem;
+      font-size: 1.54rem;
+      letter-spacing: 0;
+    }
+
+    .sidebar-head {
+      padding-bottom: 0.2rem;
+    }
+
+    .subtitle,
+    .result,
+    .result-count,
+    .field-label,
+    .empty-state,
+    .detail-subtitle {
+      color: var(--muted);
+      line-height: 1.55;
+      font-size: 0.92rem;
+    }
+
+    .search {
+      display: grid;
+      gap: 0.75rem;
+      margin: 0;
+      padding: 0.85rem;
+      border: 1px solid #d7dee3;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: 0 0.7rem 1.4rem rgba(43, 54, 62, 0.05);
+    }
+
+    label {
+      color: #45515b;
+      font-size: 0.82rem;
+    }
+
+    input {
+      width: 100%;
+      border: 1px solid #c9d4da;
+      border-radius: 8px;
+      padding: 0.85rem 0.95rem;
+      background: rgba(255, 255, 255, 0.82);
+      color: var(--text);
+      font: inherit;
+      outline: none;
+      box-shadow: inset 0 1px 2px rgba(36, 48, 56, 0.04);
+    }
+
+    input:focus {
+      border-color: var(--door);
+      box-shadow: 0 0 0 3px rgba(62, 145, 170, 0.16);
+    }
+
+    .auth-gate {
+      position: fixed;
+      z-index: 20;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      padding: 1.2rem;
+      background:
+        linear-gradient(90deg, rgba(238, 241, 243, 0.94), rgba(238, 241, 243, 0.78)),
+        var(--paper-texture) center / cover fixed,
+        var(--bg);
+    }
+
+    .auth-gate.hidden {
+      display: none;
+    }
+
+    .auth-card {
+      width: min(100%, 26rem);
+      display: grid;
+      gap: 0.82rem;
+      padding: 1.35rem;
+      border: 1px solid #d7dee3;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 1rem 2.4rem rgba(38, 50, 60, 0.18);
+    }
+
+    .auth-title {
+      margin: 0;
+      font-size: 1.45rem;
+    }
+
+    .auth-note {
+      margin-top: -0.24rem;
+      color: rgba(100, 113, 124, 0.72);
+      font-size: 0.8rem;
+      line-height: 1.45;
+      text-align: center;
+    }
+
+    .auth-message {
+      min-height: 1.4rem;
+      color: #9a4d36;
+      font-size: 0.86rem;
+      line-height: 1.45;
+    }
+
+    .session-bar {
+      display: none;
+      gap: 0.5rem;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.36rem 0.42rem 0.36rem 0.7rem;
+      border: 1px solid #d7dee3;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.86);
+      color: var(--muted);
+      font-size: 0.82rem;
+      box-shadow: 0 0.55rem 1.2rem rgba(38, 50, 60, 0.1);
+      backdrop-filter: blur(8px);
+    }
+
+    .session-bar.active {
+      display: flex;
+    }
+
+    .account-menu {
+      position: relative;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .account-menu .admin-panel {
+      position: absolute;
+      top: calc(100% + 0.6rem);
+      right: 0;
+      width: min(24rem, calc(100vw - 2rem));
+      margin: 0;
+      box-shadow: 0 1rem 2.4rem rgba(38, 50, 60, 0.16);
+    }
+
+    .account-menu .admin-panel.active {
+      display: none;
+    }
+
+    .account-menu .admin-panel.active.open {
+      display: grid;
+    }
+
+    .small-button {
+      min-height: 2rem;
+      padding: 0 0.62rem;
+      font-size: 0.78rem;
+    }
+
+    .admin-panel {
+      display: none;
+      gap: 0.72rem;
+      padding: 0.85rem;
+      border: 1px solid #d7dee3;
+      border-radius: 8px;
+      background: rgba(246, 248, 249, 0.96);
+    }
+
+    .admin-panel.active {
+      display: grid;
+    }
+
+    .account-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 0.5rem;
+    }
+
+    .account-form button {
+      grid-column: 1 / -1;
+    }
+
+    .account-list {
+      display: grid;
+      gap: 0.42rem;
+    }
+
+    .account-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 0.5rem;
+      align-items: center;
+      padding: 0.48rem 0.56rem;
+      border: 1px solid #d7dee3;
+      border-radius: 7px;
+      background: rgba(255, 255, 255, 0.74);
+      font-size: 0.82rem;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.6rem;
+    }
+
+    button {
+      min-height: 2.55rem;
+      border: 1px solid #ccd5db;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      color: var(--text);
+      font: inherit;
+      cursor: pointer;
+      transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      border-color: #9cb3bf;
+      background: #eef3f5;
+    }
+
+    button:disabled,
+    button:disabled:hover {
+      cursor: not-allowed;
+      transform: none;
+      opacity: 0.58;
+      background: rgba(255, 255, 255, 0.66);
+    }
+
+    .primary {
+      border-color: #2f6f84;
+      background: linear-gradient(180deg, #4399b2, #34869e);
+      color: #ffffff;
+      box-shadow: 0 0.45rem 1rem rgba(62, 145, 170, 0.18);
+    }
+
+    .result {
+      min-height: 3.4rem;
+      padding: 0.85rem;
+      border: 1px solid #d7dee3;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75);
+      white-space: pre-line;
+    }
+
+    .result-list {
+      display: grid;
+      align-content: start;
+      gap: 0.62rem;
+      min-height: 0;
+      max-height: 100%;
+      padding-right: 0.2rem;
+      overflow: auto;
+    }
+
+    .result-card {
+      display: grid;
+      gap: 0.58rem;
+      width: 100%;
+      min-height: auto;
+      padding: 0.86rem;
+      text-align: left;
+      border-color: #d7dee3;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 0.55rem 1.1rem rgba(43, 54, 62, 0.06);
+    }
+
+    .result-card:hover,
+    .result-card.selected {
+      border-color: var(--active);
+      background: #fff8ed;
+      transform: translateY(-1px);
+    }
+
+    .result-title {
+      color: var(--text);
+      font-size: 1rem;
+      font-weight: 700;
+      line-height: 1.45;
+      overflow-wrap: anywhere;
+    }
+
+    .result-meta,
+    .record-fields {
+      display: grid;
+      gap: 0.25rem;
+      color: var(--muted);
+      font-size: 0.78rem;
+      line-height: 1.5;
+      overflow-wrap: anywhere;
+    }
+
+    .result-meta {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .location-chip {
+      justify-self: start;
+      padding: 0.24rem 0.42rem;
+      border: 1px solid rgba(213, 138, 35, 0.38);
+      border-radius: 6px;
+      color: #7d4f13;
+      background: rgba(255, 246, 232, 0.92);
+      font: 700 0.72rem "JetBrains Mono", "Consolas", monospace;
+    }
+
+    .field-label {
+      font-size: 0.74rem;
+    }
+
+    mark {
+      padding: 0 0.12rem;
+      border-radius: 3px;
+      color: inherit;
+      background: rgba(213, 138, 35, 0.24);
+    }
+
+    .detail-card {
+      display: grid;
+      gap: 0.75rem;
+      padding: 0.85rem;
+      border: 1px solid #d7dee3;
+      border-radius: 8px;
+      background: rgba(246, 248, 249, 0.86);
+      box-shadow: 0 0.7rem 1.6rem rgba(43, 54, 62, 0.06);
+    }
+
+    .detail-head {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 0.75rem;
+    }
+
+    .detail-title {
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .code-chip {
+      max-width: 100%;
+      padding: 0.35rem 0.5rem;
+      border: 1px solid #d6c0ce;
+      border-radius: 6px;
+      color: #744862;
+      background: #f7eef4;
+      font: 0.72rem "JetBrains Mono", "Consolas", monospace;
+      overflow-wrap: anywhere;
+    }
+
+    .side-tabs {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.5rem;
+    }
+
+    .side-tabs button {
+      min-height: 2.2rem;
+      font-size: 0.86rem;
+      background: #ffffff;
+    }
+
+    .side-tabs button.active-side {
+      border-color: var(--cabinet);
+      background: #f4e8f0;
+      box-shadow: inset 0 0 0 1px rgba(155, 92, 132, 0.12);
+    }
+
+    .grid-labels,
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(6, minmax(0, 1fr));
+      gap: 0.32rem;
+    }
+
+    .grid-labels span {
+      color: #697782;
+      text-align: center;
+      font: 0.74rem "JetBrains Mono", "Consolas", monospace;
+    }
+
+    .detail-grid button {
+      min-height: 2rem;
+      padding: 0;
+      border-radius: 6px;
+      color: #6f5868;
+      background: #ffffff;
+      border-color: #d9dfe3;
+      font: 0.72rem "JetBrains Mono", "Consolas", monospace;
+    }
+
+    .detail-grid button:hover,
+    .detail-grid button.active-cell {
+      border-color: var(--active);
+      background: #fff6e8;
+      color: #7d4f13;
+      box-shadow: inset 0 0 0 1px rgba(213, 138, 35, 0.18);
+    }
+
+    .stage {
+      min-width: 0;
+      position: relative;
+      min-height: 0;
+      padding: 1.05rem;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+      background:
+        linear-gradient(180deg, rgba(238, 242, 244, 0.4), rgba(226, 232, 235, 0.58)),
+        var(--paper-texture) center / cover;
+    }
+
+    .stage-shell {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .canvas-wrap {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      border: 1px solid #c9d2d8;
+      border-radius: 8px;
+      background:
+        linear-gradient(rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.82)),
+        var(--paper-texture) center / cover,
+        #fffdf8;
+      overflow: hidden;
+      box-shadow:
+        0 1.2rem 2.4rem rgba(38, 50, 60, 0.14),
+        inset 0 0 0 1px rgba(255, 255, 255, 0.74);
+    }
+
+    svg {
+      width: min(100%, 82vh);
+      height: 72vh;
+      max-width: 100%;
+      max-height: calc(100vh - 7.4rem);
+      aspect-ratio: 1320 / 1160;
+      display: block;
+      touch-action: pan-x pan-y;
+    }
+
+    .wall {
+      fill: none;
+      stroke: var(--wall);
+      stroke-linejoin: miter;
+      stroke-linecap: square;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .wall-structure {
+      stroke: #68727a;
+      stroke-width: 10;
+    }
+
+    .wall-finish {
+      stroke: rgba(255, 253, 248, 0.94);
+      stroke-width: 4.2;
+    }
+
+    .door-line,
+    .door-arc {
+      fill: none;
+      stroke: var(--door);
+      stroke-width: 2;
+      stroke-linecap: square;
+    }
+
+    .cabinet {
+      fill: var(--cabinet-fill);
+      stroke: var(--cabinet-stroke);
+      stroke-width: 1.45;
+      vector-effect: non-scaling-stroke;
+      cursor: pointer;
+      transition: fill 0.16s ease, filter 0.16s ease;
+    }
+
+    .cabinet-cell {
+      fill: transparent;
+      stroke: transparent;
+      stroke-width: 1.4;
+      vector-effect: non-scaling-stroke;
+      cursor: pointer;
+      transition: fill 0.16s ease, stroke 0.16s ease, filter 0.16s ease;
+    }
+
+    .cabinet-group {
+      fill: rgba(155, 92, 132, 0.08);
+      stroke: var(--cabinet);
+      stroke-width: 1.45;
+      vector-effect: non-scaling-stroke;
+      cursor: pointer;
+      transition: fill 0.16s ease, filter 0.16s ease;
+    }
+
+    #mainRows:hover .bay-line,
+    #mainRows:hover .side-line {
+      opacity: 0.62;
+    }
+
+    #mainRows:hover .side-label {
+      opacity: 0.56;
+    }
+
+    .cabinet:hover,
+    .cabinet-group:hover {
+      fill: var(--cabinet-hover-fill);
+    }
+
+    .cabinet-cell:hover {
+      fill: var(--cabinet-hover-fill);
+      stroke: var(--cabinet-stroke);
+    }
+
+    .cabinet.active,
+    .cabinet-group.active {
+      fill: rgba(213, 138, 35, 0.28);
+      stroke: var(--active);
+      stroke-width: 2.2;
+      animation: cabinetFlash 3.75s ease-in-out forwards;
+    }
+
+    .cabinet-cell.active {
+      fill: rgba(213, 138, 35, 0.34);
+      stroke: var(--active);
+      stroke-width: 2;
+      animation: cellFlash 3.75s ease-in-out forwards;
+    }
+
+    .bay-area-highlight {
+      fill: rgba(213, 138, 35, 0);
+      stroke: transparent;
+      stroke-width: 0;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+    }
+
+    .bay-area-highlight.active {
+      fill: rgba(213, 138, 35, 0.22);
+      stroke: var(--active);
+      stroke-width: 2.4;
+      animation: bayAreaFlash 3.75s ease-in-out forwards;
+    }
+
+    .shelf-line,
+    .partition-line,
+    .bay-line {
+      stroke: var(--cabinet);
+      stroke-width: 1.4;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+    }
+
+    .shelf-line,
+    .partition-line {
+      opacity: 0.28;
+    }
+
+    .bay-line,
+    .side-line {
+      stroke: var(--cabinet-stroke);
+      stroke-width: 0.85;
+      stroke-dasharray: 5 5;
+      opacity: 0.32;
+      transition: opacity 0.16s ease;
+    }
+
+    .side-line {
+      opacity: 0.48;
+      stroke-dasharray: 9 5;
+    }
+
+    .column {
+      fill: var(--column);
+      stroke: rgba(0, 0, 0, 0.18);
+      stroke-width: 1.2;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .hatch-box {
+      fill: rgba(255, 255, 255, 0.38);
+      stroke: rgba(29, 29, 34, 0.62);
+      stroke-width: 1.2;
+      vector-effect: non-scaling-stroke;
+    }
+
+    .hatch-line {
+      stroke: var(--ink);
+      stroke-width: 1.15;
+      opacity: 0.45;
+    }
+
+    .cabinet-label {
+      fill: rgba(19, 24, 31, 0.86);
+      font: 13px "JetBrains Mono", "Consolas", monospace;
+      font-weight: 700;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      pointer-events: none;
+      letter-spacing: 0;
+    }
+
+    .cabinet-label-bg {
+      fill: rgba(255, 255, 255, 0.9);
+      stroke: var(--cabinet-stroke);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+    }
+
+    .cabinet-label-leader {
+      stroke: var(--cabinet-stroke);
+      stroke-width: 1;
+      stroke-dasharray: 3 4;
+      opacity: 0.72;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+    }
+
+    .bay-label {
+      fill: rgba(19, 24, 31, 0.82);
+      font: 700 13px "JetBrains Mono", "Consolas", monospace;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      pointer-events: none;
+      letter-spacing: 0;
+    }
+
+    .bay-label-bg {
+      fill: rgba(255, 255, 255, 0.9);
+      stroke: rgba(72, 96, 112, 0.64);
+      stroke-width: 1;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+    }
+
+    .bay-label-leader {
+      stroke: rgba(72, 96, 112, 0.64);
+      stroke-width: 1;
+      stroke-dasharray: 3 4;
+      opacity: 0.72;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+    }
+
+    .clickable-plan-label {
+      cursor: pointer;
+      pointer-events: auto;
+    }
+
+    .clickable-plan-label:hover {
+      filter: drop-shadow(0 2px 4px rgba(35, 45, 55, 0.18));
+    }
+
+    .fixed-cabinet {
+      fill: rgba(155, 92, 132, 0.1);
+      stroke: rgba(155, 92, 132, 0.68);
+      stroke-width: 1.2;
+      vector-effect: non-scaling-stroke;
+      cursor: pointer;
+      transition: fill 0.16s ease, filter 0.16s ease, stroke 0.16s ease;
+    }
+
+    .fixed-cabinet:hover,
+    .fixed-cabinet.active {
+      fill: rgba(213, 138, 35, 0.28);
+      stroke: var(--active);
+    }
+
+    .fixed-cabinet.active {
+      animation: fixedFlash 2.4s ease-in-out infinite;
+    }
+
+    .fixed-cabinet.persistent-active {
+      fill: rgba(213, 138, 35, 0.3);
+      stroke: var(--active);
+      stroke-width: 2.3;
+    }
+
+    .fixed-label {
+      fill: rgba(19, 24, 31, 0.74);
+      font: 700 11px "JetBrains Mono", "Consolas", monospace;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      pointer-events: none;
+    }
+
+    .fixed-callout-line {
+      stroke: var(--active);
+      stroke-width: 2;
+      stroke-dasharray: 4 3;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .fixed-callout-bg {
+      fill: rgba(255, 248, 237, 0.96);
+      stroke: rgba(213, 138, 35, 0.88);
+      stroke-width: 1.5;
+      vector-effect: non-scaling-stroke;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .fixed-callout-text {
+      fill: #7d4f13;
+      font: 800 18px "JetBrains Mono", "PingFang SC", "Microsoft YaHei", monospace;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .fixed-callout-line.active,
+    .fixed-callout-bg.active,
+    .fixed-callout-text.active {
+      animation: calloutFlash 2.4s ease-in-out infinite;
+    }
+
+    @keyframes calloutFlash {
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: 0.38;
+      }
+    }
+
+    .side-label {
+      fill: rgba(118, 78, 104, 0.8);
+      font: 8px "JetBrains Mono", "Consolas", monospace;
+      dominant-baseline: middle;
+      text-anchor: middle;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.16s ease;
+    }
+
+    @keyframes cabinetFlash {
+      0%, 24%, 48% {
+        fill: rgba(213, 138, 35, 0.3);
+        stroke: rgba(213, 138, 35, 1);
+        stroke-width: 2.2;
+      }
+      12%, 36%, 60% {
+        fill: rgba(213, 138, 35, 0.12);
+        stroke: rgba(213, 138, 35, 0.58);
+        stroke-width: 5.2;
+      }
+      78% {
+        fill: rgba(213, 138, 35, 0.22);
+        stroke: rgba(213, 138, 35, 0.82);
+        stroke-width: 2.4;
+      }
+      100% {
+        fill: var(--cabinet-fill, rgba(155, 92, 132, 0.08));
+        stroke: var(--cabinet-stroke, var(--cabinet));
+        stroke-width: 1.45;
+      }
+    }
+
+    @keyframes cellFlash {
+      0%, 24%, 48% {
+        fill: rgba(213, 138, 35, 0.34);
+        stroke: rgba(213, 138, 35, 1);
+      }
+      12%, 36%, 60% {
+        fill: rgba(213, 138, 35, 0.13);
+        stroke: rgba(213, 138, 35, 0.52);
+      }
+      78% {
+        fill: rgba(213, 138, 35, 0.22);
+        stroke: rgba(213, 138, 35, 0.78);
+      }
+      100% {
+        fill: rgba(213, 138, 35, 0);
+        stroke: rgba(213, 138, 35, 0);
+      }
+    }
+
+    @keyframes fixedFlash {
+      0%, 100% {
+        fill: rgba(213, 138, 35, 0.28);
+        stroke: rgba(213, 138, 35, 1);
+        stroke-width: 2.3;
+      }
+      50% {
+        fill: rgba(213, 138, 35, 0.1);
+        stroke: rgba(213, 138, 35, 0.46);
+        stroke-width: 1.4;
+      }
+    }
+
+    @keyframes bayAreaFlash {
+      0%, 24%, 48% {
+        fill: rgba(213, 138, 35, 0.22);
+        stroke: rgba(213, 138, 35, 1);
+        stroke-width: 2.4;
+      }
+      12%, 36%, 60% {
+        fill: rgba(213, 138, 35, 0.08);
+        stroke: rgba(213, 138, 35, 0.5);
+        stroke-width: 5.2;
+      }
+      78% {
+        fill: rgba(213, 138, 35, 0.16);
+        stroke: rgba(213, 138, 35, 0.72);
+        stroke-width: 2.6;
+      }
+      100% {
+        fill: rgba(213, 138, 35, 0);
+        stroke: rgba(213, 138, 35, 0);
+        stroke-width: 1.2;
+      }
+    }
+
+    @media (max-width: 900px) {
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+      }
+
+      .app-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .brand-subtitle {
+        display: none;
+      }
+
+      .sidebar {
+        border-right: 0;
+        border-bottom: 1px solid var(--soft-line);
+        overflow: visible;
+      }
+
+      .canvas-wrap {
+        height: 72vh;
+        min-height: 30rem;
+      }
+
+      .session-bar {
+        width: 100%;
+      }
+
+      .account-menu {
+        width: 100%;
+      }
+
+      .account-form {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <section class="auth-gate" id="authGate" aria-label="档案查询登录">
+    <form class="auth-card" id="loginForm">
+      <div>
+        <h2 class="auth-title">档案位置查询</h2>
+      </div>
+      <label for="loginUser">账号</label>
+      <input id="loginUser" autocomplete="username" placeholder="请输入账号">
+      <label for="loginPassword">密码</label>
+      <input id="loginPassword" type="password" autocomplete="current-password" placeholder="请输入密码">
+      <button class="primary" type="submit">登录查询</button>
+      <div class="auth-note">此系统仅能查询档案存放位置，无法查询具体档案信息</div>
+      <div class="auth-message" id="authMessage"></div>
+    </form>
+  </section>
+
+  <main class="app">
+    <header class="app-header">
+      <div class="brand">
+        <div class="brand-mark">档</div>
+        <div class="brand-title">档案位置查询</div>
+        <div class="brand-subtitle">Archive Location System</div>
+      </div>
+      <div class="account-menu">
+        <div class="session-bar" id="sessionBar">
+          <span id="sessionInfo">未登录</span>
+          <button class="small-button" id="accountToggle" type="button" hidden>账户管理</button>
+          <button class="small-button" id="logoutButton" type="button">退出</button>
+        </div>
+        <div class="admin-panel" id="adminPanel" aria-label="账户管理">
+          <div>
+            <div class="detail-title">一般账户管理</div>
+            <div class="detail-subtitle">静态版新增账户保存在当前浏览器本地。</div>
+          </div>
+          <div class="account-form">
+            <input id="newAccountUser" placeholder="新账号">
+            <input id="newAccountPassword" type="password" placeholder="新密码">
+            <button id="addAccountButton" type="button">新增一般账户</button>
+          </div>
+          <div class="account-list" id="accountList"></div>
+        </div>
+      </div>
+    </header>
+
+    <aside class="sidebar">
+      <div class="sidebar-head">
+        <h1>档案位置查询</h1>
+        <div class="subtitle">输入档案线索，快速定位到对应柜体和层位。</div>
+      </div>
+
+      <div class="search">
+        <label for="archiveSearch">输入档号 / 项目编号 / 中标单位 / 题名</label>
+        <input id="archiveSearch" type="search" placeholder="例如：C16·18、ZLGT、福建万豪、消防检测" disabled>
+        <div class="actions">
+          <button class="primary" id="searchButton" type="button" disabled>查询定位</button>
+          <button id="clearButton" type="button">清除</button>
+        </div>
+      </div>
+
+      <div class="result" id="result">输入任意关键词后，将从 G区档案空间对应表中模糊查询并定位。</div>
+      <div class="result-list" id="resultList" aria-label="查询结果"></div>
+
+    </aside>
+
+    <section class="stage" aria-label="档案室平面图">
+      <div class="stage-shell">
+        <div class="canvas-wrap">
+        <svg id="floorplan" viewBox="150 210 1320 1160" preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="planTitle planDesc">
+          <title id="planTitle">档案室平面定位模型</title>
+          <desc id="planDesc">深灰双线为档案室外围墙壁，门洞处断开，不同低饱和颜色用于区分密集柜，灰色为柱子，蓝色为玻璃门。</desc>
+
+          <rect x="0" y="0" width="1550" height="1426" fill="#fffdf8" opacity="0.76"></rect>
+
+          <path class="wall wall-structure" d="M 222 272 L 430 272 M 535 272 L 598 272 L 1398 1073 L 1398 1125 L 1289 1127 L 1169 1247 L 1053 1247 M 913 1247 L 222 1247 L 222 272"></path>
+          <path class="wall wall-finish" d="M 222 272 L 430 272 M 535 272 L 598 272 L 1398 1073 L 1398 1125 L 1289 1127 L 1169 1247 L 1053 1247 M 913 1247 L 222 1247 L 222 272"></path>
+
+          <g id="doors">
+            <path class="door-line" d="M 430 272 L 430 317 M 535 272 L 535 317"></path>
+            <path class="door-arc" d="M 430 317 A 53 53 0 0 0 483 272 A 53 53 0 0 0 535 317"></path>
+
+            <path class="door-line" d="M 913 1247 L 913 1308 M 1053 1247 L 1053 1308"></path>
+            <path class="door-arc" d="M 913 1308 A 70 70 0 0 0 983 1247 A 70 70 0 0 0 1053 1308"></path>
+
+            <path class="door-line" d="M 867 726 L 867 804 M 789 804 L 867 804"></path>
+            <path class="door-arc" d="M 789 804 A 78 78 0 0 1 867 726"></path>
+          </g>
+
+          <g id="columns">
+            <rect class="column" x="802" y="804" width="65" height="65"></rect>
+          </g>
+
+          <g id="cabinets">
+            <rect class="hatch-box" x="308" y="609" width="410" height="43"></rect>
+            <g id="hatchLines">
+              <line class="hatch-line" x1="312" y1="650" x2="353" y2="609"></line>
+              <line class="hatch-line" x1="334" y1="650" x2="375" y2="609"></line>
+              <line class="hatch-line" x1="356" y1="650" x2="397" y2="609"></line>
+              <line class="hatch-line" x1="378" y1="650" x2="419" y2="609"></line>
+              <line class="hatch-line" x1="400" y1="650" x2="441" y2="609"></line>
+              <line class="hatch-line" x1="422" y1="650" x2="463" y2="609"></line>
+              <line class="hatch-line" x1="444" y1="650" x2="485" y2="609"></line>
+              <line class="hatch-line" x1="466" y1="650" x2="507" y2="609"></line>
+              <line class="hatch-line" x1="488" y1="650" x2="529" y2="609"></line>
+              <line class="hatch-line" x1="510" y1="650" x2="551" y2="609"></line>
+              <line class="hatch-line" x1="532" y1="650" x2="573" y2="609"></line>
+              <line class="hatch-line" x1="554" y1="650" x2="595" y2="609"></line>
+              <line class="hatch-line" x1="576" y1="650" x2="617" y2="609"></line>
+              <line class="hatch-line" x1="598" y1="650" x2="639" y2="609"></line>
+              <line class="hatch-line" x1="620" y1="650" x2="661" y2="609"></line>
+              <line class="hatch-line" x1="642" y1="650" x2="683" y2="609"></line>
+              <line class="hatch-line" x1="664" y1="650" x2="705" y2="609"></line>
+              <line class="hatch-line" x1="686" y1="650" x2="718" y2="618"></line>
+            </g>
+
+            <g id="mainRows"></g>
+
+            <g id="fixedCabinets"></g>
+            <g id="fixedCallouts"></g>
+          </g>
+        </svg>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script src="assets/archive-location-secure.js"></script>
+  <script>
+    const mainCabinets = Array.from({ length: 12 }, (_, index) => {
+      const top = 652 + index * 42.55;
+      const no = index + 1;
+      return {
+        id: `NO.${no}`,
+        compactId: `M-NO.${no}`,
+        name: `密集柜 M-NO.${no}`,
+        aliases: [`M-NO.${no}`, `M-NO${no}`, `NO.${no}`, `NO${no}`, `主柜${no}`, `密集柜${no}`, `档案柜${no}`],
+        x: 308,
+        y: top,
+        width: 410,
+        height: 42.55,
+      };
+    });
+
+    let archiveIndex = [];
+    let activeUser = null;
+    let activeDataKey = null;
+    const securePackage = window.G_ARCHIVE_SECURE;
+    const localAccountsKey = "gArchiveLocalAccounts";
+
+    const bayCodes = ["A", "B", "C", "D", "E", "F"];
+    const cabinetPalette = [
+      { fill: "rgba(98, 124, 143, 0.18)", hover: "rgba(98, 124, 143, 0.28)", stroke: "rgba(72, 96, 112, 0.78)" },
+      { fill: "rgba(111, 143, 118, 0.18)", hover: "rgba(111, 143, 118, 0.28)", stroke: "rgba(79, 110, 86, 0.78)" },
+      { fill: "rgba(176, 138, 85, 0.2)", hover: "rgba(176, 138, 85, 0.3)", stroke: "rgba(132, 100, 59, 0.78)" },
+      { fill: "rgba(140, 115, 152, 0.18)", hover: "rgba(140, 115, 152, 0.28)", stroke: "rgba(107, 84, 119, 0.78)" },
+      { fill: "rgba(178, 116, 104, 0.18)", hover: "rgba(178, 116, 104, 0.28)", stroke: "rgba(139, 84, 74, 0.78)" },
+      { fill: "rgba(95, 145, 142, 0.18)", hover: "rgba(95, 145, 142, 0.28)", stroke: "rgba(65, 112, 109, 0.78)" },
+      { fill: "rgba(126, 133, 103, 0.18)", hover: "rgba(126, 133, 103, 0.28)", stroke: "rgba(94, 101, 73, 0.78)" },
+      { fill: "rgba(101, 118, 166, 0.17)", hover: "rgba(101, 118, 166, 0.27)", stroke: "rgba(73, 88, 131, 0.78)" },
+      { fill: "rgba(158, 111, 131, 0.17)", hover: "rgba(158, 111, 131, 0.27)", stroke: "rgba(122, 80, 98, 0.78)" },
+      { fill: "rgba(113, 136, 92, 0.18)", hover: "rgba(113, 136, 92, 0.28)", stroke: "rgba(82, 104, 64, 0.78)" },
+      { fill: "rgba(163, 127, 69, 0.18)", hover: "rgba(163, 127, 69, 0.28)", stroke: "rgba(123, 93, 47, 0.78)" },
+      { fill: "rgba(94, 132, 161, 0.18)", hover: "rgba(94, 132, 161, 0.28)", stroke: "rgba(65, 100, 126, 0.78)" },
+    ];
+    const mainRows = document.querySelector("#mainRows");
+    mainCabinets.forEach((cabinet, index) => {
+      const colors = cabinetPalette[index % cabinetPalette.length];
+      const colorStyle = `--cabinet-fill: ${colors.fill}; --cabinet-hover-fill: ${colors.hover}; --cabinet-stroke: ${colors.stroke};`;
+      const rect = createSvg("rect", {
+        class: "cabinet",
+        x: cabinet.x,
+        y: cabinet.y,
+        width: cabinet.width,
+        height: cabinet.height,
+        rx: 2.8,
+        "data-id": cabinet.id,
+        "data-compact-id": cabinet.compactId,
+        "data-name": cabinet.name,
+        "data-aliases": cabinet.aliases.join(","),
+        style: colorStyle,
+      });
+      mainRows.append(rect);
+
+      ["R", "L"].forEach((side) => {
+        const sideY = side === "R" ? cabinet.y : cabinet.y + cabinet.height / 2;
+        bayCodes.forEach((bay, bayIndex) => {
+          mainRows.append(createSvg("rect", {
+            class: "cabinet-cell",
+            x: cabinet.x + (cabinet.width / 6) * bayIndex,
+            y: sideY,
+            width: cabinet.width / 6,
+            height: cabinet.height / 2,
+            rx: 1.8,
+            "data-plan-code": `${cabinet.compactId}-${side}-${bay}`,
+            "data-no": String(index + 1),
+            "data-side": side,
+            "data-bay": bay,
+            style: colorStyle,
+          }));
+        });
+      });
+
+      for (let bay = 1; bay < 6; bay += 1) {
+        mainRows.append(createSvg("line", {
+          class: "bay-line",
+          x1: cabinet.x + (cabinet.width / 6) * bay,
+          y1: cabinet.y,
+          x2: cabinet.x + (cabinet.width / 6) * bay,
+          y2: cabinet.y + cabinet.height,
+          style: colorStyle,
+        }));
+      }
+
+      mainRows.append(createSvg("line", {
+        class: "side-line",
+        x1: cabinet.x,
+        y1: cabinet.y + cabinet.height / 2,
+        x2: cabinet.x + cabinet.width,
+        y2: cabinet.y + cabinet.height / 2,
+        style: colorStyle,
+      }));
+
+      ["R", "L"].forEach((side) => {
+        const label = createSvg("text", {
+          class: "side-label",
+          x: cabinet.x + 11,
+          y: cabinet.y + (side === "R" ? cabinet.height * 0.25 : cabinet.height * 0.75),
+        });
+        label.textContent = side;
+        mainRows.append(label);
+      });
+
+      mainRows.append(createSvg("line", {
+        class: "cabinet-label-leader",
+        x1: cabinet.x - 1,
+        y1: cabinet.y + cabinet.height / 2,
+        x2: cabinet.x - 8,
+        y2: cabinet.y + cabinet.height / 2,
+        style: colorStyle,
+      }));
+
+      mainRows.append(createSvg("rect", {
+        class: "cabinet-label-bg clickable-plan-label",
+        x: cabinet.x - 60,
+        y: cabinet.y + cabinet.height / 2 - 12,
+        width: 52,
+        height: 24,
+        rx: 7,
+        "data-id": cabinet.id,
+        "data-name": cabinet.name,
+        "data-compact-id": cabinet.compactId,
+        style: colorStyle,
+      }));
+
+      const label = createSvg("text", {
+        class: "cabinet-label clickable-plan-label",
+        x: cabinet.x - 34,
+        y: cabinet.y + cabinet.height / 2 + 1,
+        "data-id": cabinet.id,
+        "data-name": cabinet.name,
+        "data-compact-id": cabinet.compactId,
+      });
+      label.textContent = cabinet.id;
+      mainRows.append(label);
+    });
+
+    appendBayAreaHighlights();
+    appendBayLabels();
+    buildFixedCabinets();
+
+    const searchInput = document.querySelector("#archiveSearch");
+    const result = document.querySelector("#result");
+    const resultList = document.querySelector("#resultList");
+    const searchButton = document.querySelector("#searchButton");
+    const clearButton = document.querySelector("#clearButton");
+    const authGate = document.querySelector("#authGate");
+    const loginForm = document.querySelector("#loginForm");
+    const loginUser = document.querySelector("#loginUser");
+    const loginPassword = document.querySelector("#loginPassword");
+    const authMessage = document.querySelector("#authMessage");
+    const sessionBar = document.querySelector("#sessionBar");
+    const sessionInfo = document.querySelector("#sessionInfo");
+    const logoutButton = document.querySelector("#logoutButton");
+    const accountToggle = document.querySelector("#accountToggle");
+    const adminPanel = document.querySelector("#adminPanel");
+    const newAccountUser = document.querySelector("#newAccountUser");
+    const newAccountPassword = document.querySelector("#newAccountPassword");
+    const addAccountButton = document.querySelector("#addAccountButton");
+    const accountList = document.querySelector("#accountList");
+    const detailTitle = document.querySelector("#detailTitle");
+    const activeCode = document.querySelector("#activeCode");
+    const detailGrid = document.querySelector("#detailGrid");
+    const sideButtons = document.querySelectorAll(".side-tabs [data-side]");
+    const state = {
+      no: 1,
+      side: "L",
+      bay: "A",
+      level: 1,
+    };
+    let activeTimer = null;
+    let selectedRecordRow = null;
+
+    if (detailGrid) {
+      buildDetailGrid();
+      syncDetailPanel();
+    }
+
+    document.querySelectorAll("[data-id]").forEach((node) => {
+      node.addEventListener("click", () => showCabinet(node.dataset.id));
+    });
+
+    document.querySelectorAll("[data-plan-code]").forEach((node) => {
+      node.addEventListener("click", () => {
+        state.no = Number(node.dataset.no);
+        state.side = node.dataset.side;
+        state.bay = node.dataset.bay;
+        syncDetailPanel();
+        showPlanCell();
+        result.textContent = `已定位：${node.dataset.planCode}-${state.level}。`;
+      });
+    });
+
+    document.querySelectorAll("[data-bay-area]").forEach((node) => {
+      node.addEventListener("click", () => showBayArea(node.dataset.bayArea));
+    });
+
+    sideButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        state.side = button.dataset.side;
+        syncDetailPanel();
+        showCompactCell(getActiveCompactCode());
+      });
+    });
+
+    searchButton.addEventListener("click", () => locate(searchInput.value));
+    searchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") locate(searchInput.value);
+    });
+    clearButton.addEventListener("click", () => clearActive());
+    accountToggle.addEventListener("click", () => adminPanel.classList.toggle("open"));
+    loginForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      login(loginUser.value, loginPassword.value);
+    });
+    logoutButton.addEventListener("click", logout);
+    addAccountButton.addEventListener("click", addLocalAccount);
+
+    function createSvg(tag, attributes) {
+      const element = document.createElementNS("http://www.w3.org/2000/svg", tag);
+      Object.entries(attributes).forEach(([key, value]) => element.setAttribute(key, value));
+      return element;
+    }
+
+    async function login(username, password) {
+      const cleanUser = username.trim();
+      if (!cleanUser || !password) {
+        authMessage.textContent = "请输入账号和密码。";
+        return;
+      }
+
+      const account = getAccounts().find((item) => item.username === cleanUser);
+      if (!account) {
+        authMessage.textContent = "账号或密码不正确。";
+        return;
+      }
+
+      try {
+        const dataKey = await unwrapDataKey(account, password);
+        const records = await decryptRecords(dataKey);
+        activeDataKey = dataKey;
+        activeUser = { username: account.username, role: account.role };
+        archiveIndex = records.map((record) => ({
+          ...record,
+          searchText: normalizeText([
+            record.archiveNo,
+            record.projectNo,
+            record.bidder,
+            record.title,
+          ].join(" ")),
+        }));
+        authGate.classList.add("hidden");
+        sessionBar.classList.add("active");
+        sessionInfo.textContent = `${account.username} / ${account.role === "admin" ? "管理员" : "一般账户"}`;
+        accountToggle.hidden = account.role !== "admin";
+        searchInput.disabled = false;
+        searchButton.disabled = false;
+        adminPanel.classList.toggle("active", account.role === "admin");
+        adminPanel.classList.remove("open");
+        renderAccountList();
+        result.textContent = "已登录。请输入档号、项目编号、中标单位或题名中的任意信息。";
+        authMessage.textContent = "";
+        loginPassword.value = "";
+      } catch (error) {
+        authMessage.textContent = "账号或密码不正确，无法解密档案索引。";
+      }
+    }
+
+    function logout() {
+      activeUser = null;
+      activeDataKey = null;
+      archiveIndex = [];
+      searchInput.value = "";
+      searchInput.disabled = true;
+      searchButton.disabled = true;
+      sessionBar.classList.remove("active");
+      adminPanel.classList.remove("active");
+      adminPanel.classList.remove("open");
+      accountToggle.hidden = true;
+      authGate.classList.remove("hidden");
+      resultList.innerHTML = "";
+      result.textContent = "已退出。登录后才可查询档案位置。";
+      clearActive(false);
+    }
+
+    function getAccounts() {
+      return [...(securePackage?.accounts || []), ...getLocalAccounts()];
+    }
+
+    function getLocalAccounts() {
+      try {
+        const raw = window.localStorage.getItem(localAccountsKey);
+        return raw ? JSON.parse(raw) : [];
+      } catch (error) {
+        return [];
+      }
+    }
+
+    function saveLocalAccounts(accounts) {
+      window.localStorage.setItem(localAccountsKey, JSON.stringify(accounts));
+    }
+
+    async function addLocalAccount() {
+      if (!activeUser || activeUser.role !== "admin" || !activeDataKey) return;
+      const username = newAccountUser.value.trim();
+      const password = newAccountPassword.value;
+      if (!/^[A-Za-z0-9_@.-]{2,32}$/.test(username) || password.length < 6) {
+        result.textContent = "新账号需 2-32 位，密码至少 6 位。";
+        return;
+      }
+      if (getAccounts().some((account) => account.username === username)) {
+        result.textContent = "该账号已存在。";
+        return;
+      }
+
+      const account = await wrapDataKeyForAccount(username, password, "user", activeDataKey);
+      const accounts = getLocalAccounts();
+      accounts.push(account);
+      saveLocalAccounts(accounts);
+      newAccountUser.value = "";
+      newAccountPassword.value = "";
+      renderAccountList();
+      result.textContent = `已新增一般账户：${username}。`;
+    }
+
+    function removeLocalAccount(username) {
+      const accounts = getLocalAccounts().filter((account) => account.username !== username);
+      saveLocalAccounts(accounts);
+      renderAccountList();
+      result.textContent = `已移除本机一般账户：${username}。`;
+    }
+
+    function renderAccountList() {
+      accountList.innerHTML = "";
+      if (!activeUser || activeUser.role !== "admin") return;
+      const accounts = getAccounts();
+      accounts.forEach((account) => {
+        const row = document.createElement("div");
+        row.className = "account-row";
+        const fixed = securePackage.accounts.some((item) => item.username === account.username);
+        row.innerHTML = `<span>${escapeHtml(account.username)} / ${account.role === "admin" ? "管理员" : "一般账户"}</span>`;
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "small-button";
+        button.textContent = fixed ? "内置" : "移除";
+        button.disabled = fixed;
+        if (!fixed) button.addEventListener("click", () => removeLocalAccount(account.username));
+        row.append(button);
+        accountList.append(row);
+      });
+    }
+
+    async function wrapDataKeyForAccount(username, password, role, dataKey) {
+      const salt = crypto.getRandomValues(new Uint8Array(16));
+      const wrappingKey = await deriveWrappingKey(password, salt);
+      const rawDataKey = await crypto.subtle.exportKey("raw", dataKey);
+      const wrappedKey = await encryptBytes(wrappingKey, new Uint8Array(rawDataKey));
+      return {
+        username,
+        role,
+        salt: bytesToBase64(salt),
+        wrappedKey,
+      };
+    }
+
+    async function unwrapDataKey(account, password) {
+      const wrappingKey = await deriveWrappingKey(password, base64ToBytes(account.salt));
+      const rawDataKey = await decryptBytes(wrappingKey, account.wrappedKey);
+      return crypto.subtle.importKey("raw", rawDataKey, "AES-GCM", true, ["decrypt", "encrypt"]);
+    }
+
+    async function decryptRecords(dataKey) {
+      const bytes = await decryptBytes(dataKey, securePackage.records);
+      return JSON.parse(new TextDecoder().decode(bytes));
+    }
+
+    async function deriveWrappingKey(password, salt) {
+      const baseKey = await crypto.subtle.importKey(
+        "raw",
+        new TextEncoder().encode(password),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+      return crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt,
+          iterations: securePackage.kdf.iterations,
+          hash: securePackage.kdf.hash,
+        },
+        baseKey,
+        { name: "AES-GCM", length: securePackage.kdf.keyLength },
+        false,
+        ["encrypt", "decrypt"]
+      );
+    }
+
+    async function encryptBytes(key, bytes) {
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      const encrypted = new Uint8Array(await crypto.subtle.encrypt({ name: "AES-GCM", iv }, key, bytes));
+      return {
+        iv: bytesToBase64(iv),
+        data: bytesToBase64(encrypted),
+      };
+    }
+
+    async function decryptBytes(key, payload) {
+      return new Uint8Array(await crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: base64ToBytes(payload.iv) },
+        key,
+        base64ToBytes(payload.data)
+      ));
+    }
+
+    function bytesToBase64(bytes) {
+      return btoa(String.fromCharCode(...bytes));
+    }
+
+    function base64ToBytes(value) {
+      return Uint8Array.from(atob(value), (char) => char.charCodeAt(0));
+    }
+
+    function appendBayAreaHighlights() {
+      const firstCabinet = mainCabinets[0];
+      const lastCabinet = mainCabinets[mainCabinets.length - 1];
+      const bayWidth = firstCabinet.width / bayCodes.length;
+      const areaTop = firstCabinet.y;
+      const areaHeight = lastCabinet.y + lastCabinet.height - firstCabinet.y;
+
+      bayCodes.forEach((bay, index) => {
+        mainRows.append(createSvg("rect", {
+          class: "bay-area-highlight",
+          x: firstCabinet.x + bayWidth * index,
+          y: areaTop,
+          width: bayWidth,
+          height: areaHeight,
+          rx: 2.8,
+          "data-bay-highlight": bay,
+        }));
+      });
+    }
+
+    function appendBayLabels() {
+      const firstCabinet = mainCabinets[0];
+      const lastCabinet = mainCabinets[mainCabinets.length - 1];
+      const bayWidth = firstCabinet.width / bayCodes.length;
+      const leaderTop = lastCabinet.y + lastCabinet.height + 1;
+      const labelY = leaderTop + 24;
+
+      bayCodes.forEach((bay, index) => {
+        const centerX = firstCabinet.x + bayWidth * index + bayWidth / 2;
+        mainRows.append(createSvg("line", {
+          class: "bay-label-leader",
+          x1: centerX,
+          y1: leaderTop,
+          x2: centerX,
+          y2: labelY - 12,
+        }));
+
+        mainRows.append(createSvg("rect", {
+          class: "bay-label-bg clickable-plan-label",
+          x: centerX - 23,
+          y: labelY - 12,
+          width: 46,
+          height: 24,
+          rx: 7,
+          "data-bay-area": bay,
+        }));
+
+        const label = createSvg("text", {
+          class: "bay-label clickable-plan-label",
+          x: centerX,
+          y: labelY + 1,
+          "data-bay-area": bay,
+        });
+        label.textContent = `${bay}区`;
+        mainRows.append(label);
+      });
+    }
+
+    function buildFixedCabinets() {
+      const group = document.querySelector("#fixedCabinets");
+      const xLeft = 803;
+      const xRight = 835;
+      const cellWidth = 32;
+      const upper = { y: 541, height: 185, count: 3 };
+      const lower = { y: 869, height: 378, count: 6 };
+
+      for (let index = 0; index < lower.count; index += 1) {
+        const code = `G-${index + 1}`;
+        appendFixedCabinet(group, code, xRight, lower.y + lower.height - (index + 1) * (lower.height / lower.count), cellWidth, lower.height / lower.count);
+      }
+
+      for (let index = 0; index < upper.count; index += 1) {
+        const code = `G-${index + 7}`;
+        appendFixedCabinet(group, code, xRight, upper.y + upper.height - (index + 1) * (upper.height / upper.count), cellWidth, upper.height / upper.count);
+      }
+
+      for (let index = 0; index < upper.count; index += 1) {
+        const code = `G-${index + 10}`;
+        appendFixedCabinet(group, code, xLeft, upper.y + index * (upper.height / upper.count), cellWidth, upper.height / upper.count);
+      }
+
+      for (let index = 0; index < lower.count; index += 1) {
+        const code = `G-${index + 13}`;
+        appendFixedCabinet(group, code, xLeft, lower.y + index * (lower.height / lower.count), cellWidth, lower.height / lower.count);
+      }
+    }
+
+    function appendFixedCabinet(group, code, x, y, width, height) {
+      group.append(createSvg("rect", {
+        class: "fixed-cabinet",
+        x,
+        y,
+        width,
+        height,
+        rx: 1.6,
+        "data-id": code,
+        "data-name": `固定档案柜 ${code}`,
+        "data-aliases": `${code},固定柜${code.replace("G-", "")},右侧固定柜`,
+      }));
+
+      const label = createSvg("text", {
+        class: "fixed-label",
+        x: x + width / 2,
+        y: y + height / 2,
+      });
+      label.textContent = code.replace("-", "");
+      group.append(label);
+    }
+
+    function buildDetailGrid() {
+      if (!detailGrid) return;
+      for (let level = 1; level <= 6; level += 1) {
+        bayCodes.forEach((bay) => {
+          const button = document.createElement("button");
+          button.type = "button";
+          button.dataset.bay = bay;
+          button.dataset.level = String(level);
+          button.textContent = `${bay}${level}`;
+          button.addEventListener("click", () => {
+            state.bay = bay;
+            state.level = level;
+            showCompactCell(getActiveCompactCode());
+          });
+          detailGrid.append(button);
+        });
+      }
+    }
+
+    function parseCompactCode(rawValue) {
+      const normalized = rawValue.trim().toUpperCase().replace(/\s+/g, "");
+      const match = normalized.match(/^M-NO\.?([1-9]|1[0-2])-(L|R)-([A-F])-([1-6])$/);
+      if (!match) return null;
+      return {
+        no: Number(match[1]),
+        side: match[2],
+        bay: match[3],
+        level: Number(match[4]),
+      };
+    }
+
+    function getActiveCompactCode() {
+      return `M-NO.${state.no}-${state.side}-${state.bay}-${state.level}`;
+    }
+
+    function syncDetailPanel() {
+      if (!detailTitle || !activeCode || !detailGrid) return;
+      detailTitle.textContent = `密集柜 M-NO.${state.no}`;
+      activeCode.textContent = getActiveCompactCode();
+      sideButtons.forEach((button) => {
+        button.classList.toggle("active-side", button.dataset.side === state.side);
+      });
+      detailGrid.querySelectorAll("button").forEach((button) => {
+        button.classList.toggle(
+          "active-cell",
+          button.dataset.bay === state.bay && Number(button.dataset.level) === state.level
+        );
+      });
+    }
+
+    function locate(rawKeyword) {
+      const keyword = normalizeText(rawKeyword);
+      if (!activeUser) {
+        result.textContent = "请先登录。";
+        return;
+      }
+      if (!keyword) {
+        result.textContent = "请输入档号、项目编号、中标单位或题名中的任意信息。";
+        resultList.innerHTML = "";
+        return;
+      }
+      if (keyword.length < 2) {
+        result.textContent = "关键词至少输入 2 个字符，避免一次性扫出过多档案。";
+        resultList.innerHTML = "";
+        return;
+      }
+
+      const compactCell = parseCompactCode(rawKeyword);
+      if (compactCell) {
+        showCompactCell(rawKeyword);
+        return;
+      }
+
+      const fixedCell = parseFixedCode(rawKeyword);
+      if (fixedCell) {
+        showFixedCell(fixedCell);
+        return;
+      }
+
+      const matches = archiveIndex
+        .filter((item) => item.searchText.includes(keyword))
+        .slice(0, 80);
+
+      if (matches.length) {
+        renderSearchResults(matches, rawKeyword);
+        selectRecord(matches[0]);
+        return;
+      }
+
+      const target = [...document.querySelectorAll("[data-id]")].find((node) => {
+        const haystack = normalizeText([node.dataset.id, node.dataset.compactId, node.dataset.name, node.dataset.aliases].join(","));
+        return haystack.includes(keyword);
+      });
+
+      if (target) {
+        resultList.innerHTML = "";
+        showCabinet(target.dataset.id);
+      } else {
+        clearActive(false);
+        resultList.innerHTML = "";
+        result.textContent = `未找到 “${rawKeyword}”。可以换用更短的档号、项目编号片段、中标单位关键词或题名关键词。`;
+      }
+    }
+
+    function renderSearchResults(records, rawKeyword) {
+      const keyword = rawKeyword.trim();
+      const cappedText = records.length >= 80 ? "，先显示前 80 条" : "";
+      result.textContent = `找到 ${records.length} 条相关档案${cappedText}。\n点击下列具体档案可在右侧平面图中显示位置。`;
+      resultList.innerHTML = "";
+
+      records.forEach((record) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = "result-card";
+        card.dataset.row = String(record.row);
+        card.innerHTML = `
+          <div class="result-title">${highlightText(escapeHtml(record.title || "未命名档案"), keyword)}</div>
+          <div class="location-chip">${escapeHtml(formatLocation(record))}</div>
+          <div class="result-meta">
+            <span><span class="field-label">档号</span> ${highlightText(escapeHtml(record.archiveNo || "-"), keyword)}</span>
+            <span><span class="field-label">项目编号</span> ${highlightText(escapeHtml(record.projectNo || "-"), keyword)}</span>
+          </div>
+          <div class="record-fields">
+            <span><span class="field-label">中标单位</span> ${highlightText(escapeHtml(record.bidder || "-"), keyword)}</span>
+          </div>
+        `;
+        card.addEventListener("click", () => selectRecord(record));
+        resultList.append(card);
+      });
+    }
+
+    function selectRecord(record) {
+      selectedRecordRow = record.row;
+      resultList.querySelectorAll(".result-card").forEach((card) => {
+        card.classList.toggle("selected", Number(card.dataset.row) === selectedRecordRow);
+      });
+      showFixedCell(
+        { code: record.fixedCode, level: Number(record.layer) || null },
+        `${record.archiveNo || "该档案"} 位于 ${formatLocation(record)}。\n点击下列具体档案可在右侧平面图中显示位置。`
+      );
+    }
+
+    function formatLocation(record) {
+      const cabinet = record.cabinet || record.fixedCode || "未标注柜号";
+      const layer = record.layer ? `第 ${record.layer} 层` : "未标注层数";
+      return `${cabinet} ${layer}`;
+    }
+
+    function normalizeText(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/[‐‑‒–—]/g, "-")
+        .replace(/\s+/g, "")
+        .replace(/g(\d+)/g, "g-$1");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function highlightText(escapedText, rawKeyword) {
+      const keyword = escapeHtml(rawKeyword.trim());
+      if (!keyword) return escapedText;
+      const escapedPattern = keyword.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      return escapedText.replace(new RegExp(escapedPattern, "gi"), (match) => `<mark>${match}</mark>`);
+    }
+
+    function showCompactCell(code, message) {
+      const parsed = parseCompactCode(code);
+      if (!parsed) return;
+
+      state.no = parsed.no;
+      state.side = parsed.side;
+      state.bay = parsed.bay;
+      state.level = parsed.level;
+      syncDetailPanel();
+      showPlanCell();
+      result.textContent = message || `已定位：${getActiveCompactCode()}。`;
+    }
+
+    function parseFixedCode(rawValue) {
+      const normalized = rawValue.trim().toUpperCase().replace(/\s+/g, "");
+      const match = normalized.match(/^G-?([1-9]|1[0-8])(?:-?([1-6]))?$/);
+      if (!match) return null;
+      return {
+        code: `G-${Number(match[1])}`,
+        level: match[2] ? Number(match[2]) : null,
+      };
+    }
+
+    function showFixedCell(fixedCell, message) {
+      clearActive(false);
+      const targets = [];
+      const cabinet = document.querySelector(`.fixed-cabinet[data-id="${CSS.escape(fixedCell.code)}"]`);
+      targets.push(cabinet);
+      if (cabinet && fixedCell.level) {
+        targets.push(...drawFixedCallout(cabinet, fixedCell));
+      }
+      flashActive(targets);
+      result.textContent = message || `已定位：${fixedCell.code}${fixedCell.level ? ` 第 ${fixedCell.level} 层` : ""}。`;
+    }
+
+    function drawFixedCallout(cabinet, fixedCell) {
+      const calloutLayer = document.querySelector("#fixedCallouts");
+      calloutLayer.innerHTML = "";
+
+      const x = Number(cabinet.getAttribute("x"));
+      const y = Number(cabinet.getAttribute("y"));
+      const width = Number(cabinet.getAttribute("width"));
+      const height = Number(cabinet.getAttribute("height"));
+      const centerY = y + height / 2;
+      const isRightColumn = x > 820;
+      const anchorX = isRightColumn ? x + width : x;
+      const elbowX = isRightColumn ? anchorX + 34 : anchorX - 34;
+      const labelWidth = 126;
+      const labelHeight = 36;
+      const labelX = isRightColumn ? elbowX + labelWidth / 2 : elbowX - labelWidth / 2;
+      const labelY = centerY;
+
+      const line = createSvg("polyline", {
+        class: "fixed-callout-line",
+        points: `${anchorX},${centerY} ${elbowX},${centerY}`,
+      });
+      const bg = createSvg("rect", {
+        class: "fixed-callout-bg",
+        x: labelX - labelWidth / 2,
+        y: labelY - labelHeight / 2,
+        width: labelWidth,
+        height: labelHeight,
+        rx: 7,
+      });
+      const text = createSvg("text", {
+        class: "fixed-callout-text",
+        x: labelX,
+        y: labelY + 1,
+      });
+      text.textContent = `${fixedCell.code.replace("-", "")}柜 第${fixedCell.level}层`;
+
+      calloutLayer.append(line, bg, text);
+      return [line, bg, text];
+    }
+
+    function showPlanCell() {
+      clearActive(false);
+      const planCode = `M-NO.${state.no}-${state.side}-${state.bay}`;
+      const target = document.querySelector(`[data-plan-code="${CSS.escape(planCode)}"]`);
+      flashActive(target);
+    }
+
+    function showBayArea(bay) {
+      clearActive(false);
+      const target = document.querySelector(`[data-bay-highlight="${CSS.escape(bay)}"]`);
+      flashActive(target);
+      state.bay = bay;
+      syncDetailPanel();
+      result.textContent = `已定位：密集柜 ${bay}区。`;
+    }
+
+    function showCabinet(id, message) {
+      clearActive(false);
+      let target = document.querySelector(`[data-id="${CSS.escape(id)}"]`);
+      if (!target) target = document.querySelector(`[data-compact-id="${CSS.escape(id)}"]`);
+      if (!target) return;
+
+      const compactNo = target.dataset.id?.match(/^NO\.(\d+)$/);
+      if (compactNo) {
+        state.no = Number(compactNo[1]);
+        syncDetailPanel();
+      }
+
+      flashActive(target);
+      const name = target.dataset.name || id;
+      result.textContent = message || `已定位：${name}（${id}）。`;
+    }
+
+    function flashActive(target) {
+      const targets = Array.isArray(target) || target instanceof NodeList ? [...target] : [target];
+      const validTargets = targets.filter(Boolean);
+      validTargets.forEach((node) => {
+        node.classList.add("active");
+        if (node.classList.contains("fixed-cabinet")) {
+          node.classList.add("persistent-active");
+        }
+      });
+    }
+
+    function clearActive(clearMessage = true) {
+      if (activeTimer) {
+        window.clearTimeout(activeTimer);
+        activeTimer = null;
+      }
+      document.querySelectorAll(
+        ".cabinet.active, .cabinet-cell.active, .cabinet-group.active, .fixed-cabinet.active, .fixed-cabinet.persistent-active, .bay-area-highlight.active, .fixed-callout-line.active, .fixed-callout-bg.active, .fixed-callout-text.active"
+      ).forEach((node) => node.classList.remove("active"));
+      document.querySelectorAll(".fixed-cabinet.persistent-active").forEach((node) => node.classList.remove("persistent-active"));
+      if (clearMessage) {
+        if (detailGrid) {
+          detailGrid.querySelectorAll(".active-cell").forEach((node) => node.classList.remove("active-cell"));
+        }
+        resultList.innerHTML = "";
+        selectedRecordRow = null;
+        result.textContent = "已清除定位。";
+      }
+    }
+  </script>
+</body>
+</html>
